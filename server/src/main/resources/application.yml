@@ -1,0 +1,54 @@
+server:
+  port: 8080
+
+debug: true
+
+logging:
+  level:
+    org:
+      springframework:
+        web: DEBUG
+        cache: DEBUG
+        hibernate:
+          sql: DEBUG
+          com:
+            jdbc:
+              binding: DEBUG
+
+spring:
+  profiles:
+    active: dev
+
+  output:
+    ansi:
+      enabled: always
+
+  mvc:
+    log-request-details: true
+
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: ${kg.datasource.driver-class-name}
+    url: jdbc:mysql://${kg.datasource.host}:${kg.datasource.port}/${kg.datasource.database}?createDatabaseIfNotExist=true&ifNotExist=true&serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${kg.datasource.username}
+    password: ${kg.datasource.password}
+
+kg:
+  jwt:
+    secret-key: ${kg.jwt.secret-key}
+    ttl: ${kg.jwt.ttl}
+    token-name: ${kg.jwt.token-name}
+
+  oss:
+    access-key: ${kg.oss.access-key}
+    secret-key: ${kg.oss.secret-key}
+    bucket: ${kg.oss.bucket}
+
