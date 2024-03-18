@@ -48,6 +48,7 @@ kg:
     token-name: ${kg.jwt.token-name}
 
   oss:
+    domain: ${kg.oss.domain}
     access-key: ${kg.oss.access-key}
     secret-key: ${kg.oss.secret-key}
     bucket: ${kg.oss.bucket}

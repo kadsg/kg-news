@@ -31,7 +31,7 @@ public class AutoFillAspect {
     }
 
     // 作用范围
-    private final String POINT_CUT = "execution(@annotation(com.kadsg.annotation.AutoFill)";
+    private final String POINT_CUT = "@annotation(kg.news.annotation.AutoFill)";
 
     // 切入点
     @Pointcut(POINT_CUT)
