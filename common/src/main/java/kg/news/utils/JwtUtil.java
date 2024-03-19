@@ -17,7 +17,7 @@ public class JwtUtil {
      * @param claims    信息载体
      * @return token
      */
-    public static String generateToken(String secretKey, long ttlMillis, Map<String, Object> claims) {
+    public static String generateToken(String secretKey, long ttlMillis, Map<String, ?> claims) {
         Date now = new Date();
         Date expiration = new Date(now.getTime() + ttlMillis);
         return JWT.create()

@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
  */
 @Component
 @Aspect
+@Deprecated(since = "1.0.0", forRemoval = true)
 public class AutoFillAspect {
     // 方法名
     private enum MethodName {

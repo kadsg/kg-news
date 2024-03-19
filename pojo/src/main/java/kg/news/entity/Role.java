@@ -31,9 +31,7 @@ public class Role implements Serializable {
     private LocalDateTime createTime;
     @Column(nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", insertable = false)
     private LocalDateTime updateTime;
-    @Column(nullable = false)
     private Long createUser;
-    @Column(nullable = false)
     private Long updateUser;
     @Column(nullable = false, columnDefinition = "TINYINT(1) DEFAULT 0", insertable = false)
     private Boolean deleteFlag;

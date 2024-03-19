@@ -12,7 +12,7 @@ public class Result<T> implements Serializable {
     @AllArgsConstructor
     @Getter
     private enum Code {
-        SUCCESS(1, "成功"), FAILURE(500, "失败"), NOT_FOUND(404, "未找到");
+        SUCCESS(200, "成功"), FAILURE(500, "失败"), NOT_FOUND(404, "未找到");
         private final Integer code;
         private final String msg;
     }
@@ -20,6 +20,7 @@ public class Result<T> implements Serializable {
     private Integer code;
     private String msg;
     private T data;
+
     public static <T> Result<T> build(T data) {
         Result<T> result = new Result<>();
         if (data != null) {
@@ -42,7 +43,7 @@ public class Result<T> implements Serializable {
         return result;
     }
 
-    public static <T> Result<T> success() {
+    public static Result<Object> success() {
         return success(null);
     }
 
