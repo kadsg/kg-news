@@ -1,31 +1,26 @@
-package kg.news.controller.admin;
+package kg.news.controller.user;
 
 import kg.news.dto.LoginDTO;
-import kg.news.dto.NewsTagDTO;
-import kg.news.dto.RoleDTO;
 import kg.news.entity.User;
 import kg.news.result.Result;
-import kg.news.service.NewsTagService;
-import kg.news.service.RoleService;
 import kg.news.service.LoginService;
+import kg.news.service.TagSelectionService;
 import kg.news.vo.LoginVO;
+import kg.news.vo.TagSelectionVO;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Set;
 
 @RestController
-@RequestMapping("/admin")
-public class AdminController {
+@RequestMapping("/user")
+public class UserController {
     private final LoginService loginService;
-    private final RoleService roleService;
-    private final NewsTagService newsTagService;
+    private final TagSelectionService tagSelectionService;
 
-    public AdminController(@Qualifier("adminLoginServiceImpl") LoginService loginService, RoleService roleService, NewsTagService newsTagService) {
+    public UserController(@Qualifier("userLoginServiceImpl") LoginService loginService, TagSelectionService tagSelectionService) {
         this.loginService = loginService;
-        this.roleService = roleService;
-        this.newsTagService = newsTagService;
+        this.tagSelectionService = tagSelectionService;
     }
 
     @PostMapping("/login")
@@ -53,15 +48,24 @@ public class AdminController {
         return Result.success(loginVO);
     }
 
-    @PostMapping("/addRole")
-    public Result<Object> addRole(@RequestBody RoleDTO roleDTO) {
-        roleService.addRole(roleDTO);
-        return Result.success();
+    /**
+     * 获取标签选择
+     * @param id 用户id
+     * @return 标签选择
+     */
+    @GetMapping("/tagSelection/{id}")
+    public Result<TagSelectionVO> getTagSelection(@PathVariable("id") Long id) {
+        Set<Long> tagSelection = tagSelectionService.getTagSelection(id);
+        TagSelectionVO tagSelectionVO = TagSelectionVO.builder()
+                .userId(id)
+                .tags(tagSelection)
+                .build();
+        return Result.success(tagSelectionVO);
     }
 
-    @PostMapping("/addNewsTag")
-    public Result<Object> addNewsTag(@RequestBody NewsTagDTO newsTagDTO) {
-        newsTagService.addNewsTag(newsTagDTO);
+    @PutMapping("/tagSelection")
+    public Result<Object> saveTagSelection(@RequestBody TagSelectionVO tagSelectionVO) {
+        tagSelectionService.saveTagSelection(tagSelectionVO);
         return Result.success();
     }
 }

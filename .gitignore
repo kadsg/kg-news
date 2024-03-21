@@ -8,6 +8,7 @@ target/
 *.iml
 *.ipr
 .idea/
+.jpb/
 
 ### Eclipse ###
 .apt_generated

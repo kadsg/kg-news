@@ -13,6 +13,8 @@ import kg.news.utils.ServiceUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.lang.reflect.InvocationTargetException;
+
 @Service
 public class AdminLoginServiceImpl extends LoginServiceImpl implements LoginService {
 
@@ -34,7 +36,11 @@ public class AdminLoginServiceImpl extends LoginServiceImpl implements LoginServ
                 .userId(user.getId())
                 .roleId(roleId)
                 .build();
-        ServiceUtil.autoFill(roleMapper, OperationType.INSERT);
+        try {
+            ServiceUtil.autoFill(roleMapper, OperationType.INSERT);
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
         roleMapperService.addRoleMapper(roleMapper);
         return user;
     }

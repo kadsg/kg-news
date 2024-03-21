@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-public class NewsType implements Serializable {
+public class NewsTag implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
     @Id

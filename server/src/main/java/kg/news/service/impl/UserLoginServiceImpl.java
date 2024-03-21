@@ -13,6 +13,8 @@ import kg.news.utils.ServiceUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.lang.reflect.InvocationTargetException;
+
 /**
  * 用户登录服务实现类
  */
@@ -37,7 +39,11 @@ public class UserLoginServiceImpl extends LoginServiceImpl implements LoginServi
                 .userId(user.getId())
                 .roleId(roleId)
                 .build();
-        ServiceUtil.autoFill(roleMapper, OperationType.INSERT);
+        try {
+            ServiceUtil.autoFill(roleMapper, OperationType.INSERT);
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
         roleMapperService.addRoleMapper(roleMapper);
         return user;
     }
