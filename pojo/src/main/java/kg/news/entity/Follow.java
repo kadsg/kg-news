@@ -19,13 +19,25 @@ import java.io.Serializable;
 public class Follow implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
+    /**
+     * 主键ID
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    /**
+     * 用户ID
+     */
     @Column(nullable = false)
     private Long userId;
+    /**
+     * 被关注用户ID
+     */
     @Column(nullable = false)
     private Long followUserId;
+    /**
+     * 删除标记
+     */
     @Column(nullable = false, columnDefinition = "TINYINT(1) DEFAULT 0", insertable = false)
     private Boolean deleteFlag;
 }

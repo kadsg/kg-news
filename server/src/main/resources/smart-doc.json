@@ -1,0 +1,13 @@
+{
+  "projectName": "kg-news",
+  "outPath": "src/main/resources/static/smart-docs",
+  "serverUrl": "http://localhost:8080",
+  "allInOne": true,
+  "createDebugPage": false,
+
+  "sourceCodePaths": [
+    {
+      "path": "src/main/java"
+    }
+  ]
+}

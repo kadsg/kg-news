@@ -6,6 +6,9 @@ import lombok.Getter;
 
 import java.io.Serializable;
 
+/**
+ * 返回结果
+ */
 @Data
 public class Result<T> implements Serializable {
 
@@ -17,8 +20,17 @@ public class Result<T> implements Serializable {
         private final String msg;
     }
 
+    /**
+     * 状态码
+     */
     private Integer code;
+    /**
+     * 消息
+     */
     private String msg;
+    /**
+     * 数据
+     */
     private T data;
 
     public static <T> Result<T> build(T data) {

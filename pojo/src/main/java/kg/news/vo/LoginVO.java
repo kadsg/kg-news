@@ -5,12 +5,22 @@ import lombok.Data;
 
 import java.io.Serializable;
 
+/**
+ * 登录数据
+ */
 @Builder
 @Data
 public class LoginVO implements Serializable {
-    // 主键值
+    /**
+     * 用户id
+     */
     private Long id;
+    /**
+     * token
+     */
     private String token;
-    // 拓展字段
+    /**
+     * 拓展字段
+     */
     private String code;
 }

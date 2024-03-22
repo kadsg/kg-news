@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 管理员控制器
+ */
 @RestController
 @RequestMapping("/admin")
 public class AdminController {
@@ -28,6 +31,11 @@ public class AdminController {
         this.newsTagService = newsTagService;
     }
 
+    /**
+     * 登录
+     * @param loginDTO 登录信息
+     * @return 登录结果
+     */
     @PostMapping("/login")
     public Result<LoginVO> login(@RequestBody LoginDTO loginDTO) {
         User user = loginService.login(loginDTO);
@@ -39,11 +47,20 @@ public class AdminController {
         return Result.success(loginVO);
     }
 
+    /**
+     * 退出
+     * @return 退出结果
+     */
     @PostMapping("/logout")
     public Result<Object> logout() {
         return Result.success();
     }
 
+    /**
+     * 注册
+     * @param loginDTO 注册信息
+     * @return 注册结果
+     */
     @PostMapping("/register")
     public Result<LoginVO> register(@RequestBody LoginDTO loginDTO) {
         User user = loginService.register(loginDTO);
@@ -53,12 +70,22 @@ public class AdminController {
         return Result.success(loginVO);
     }
 
+    /**
+     * 添加角色
+     * @param roleDTO 角色信息
+     * @return 添加结果
+     */
     @PostMapping("/addRole")
     public Result<Object> addRole(@RequestBody RoleDTO roleDTO) {
         roleService.addRole(roleDTO);
         return Result.success();
     }
 
+    /**
+     * 添加新闻标签
+     * @param newsTagDTO 新闻标签信息
+     * @return 添加结果
+     */
     @PostMapping("/addNewsTag")
     public Result<Object> addNewsTag(@RequestBody NewsTagDTO newsTagDTO) {
         newsTagService.addNewsTag(newsTagDTO);

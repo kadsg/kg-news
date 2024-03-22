@@ -1,0 +1,1 @@
+mvn -X smart-doc:html  -pl :server -am

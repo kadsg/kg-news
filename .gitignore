@@ -36,3 +36,4 @@ build/
 .DS_Stor
 
 server/src/main/resources/application-*.yml
+smart-docs/
