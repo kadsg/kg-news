@@ -1,12 +1,8 @@
 package kg.news.controller.admin;
 
 import kg.news.dto.LoginDTO;
-import kg.news.dto.NewsTagDTO;
-import kg.news.dto.RoleDTO;
 import kg.news.entity.User;
 import kg.news.result.Result;
-import kg.news.service.NewsTagService;
-import kg.news.service.RoleService;
 import kg.news.service.LoginService;
 import kg.news.vo.LoginVO;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -20,15 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/admin")
-public class AdminController {
+public class AccountController {
     private final LoginService loginService;
-    private final RoleService roleService;
-    private final NewsTagService newsTagService;
 
-    public AdminController(@Qualifier("adminLoginServiceImpl") LoginService loginService, RoleService roleService, NewsTagService newsTagService) {
+    public AccountController(@Qualifier("adminLoginServiceImpl") LoginService loginService) {
         this.loginService = loginService;
-        this.roleService = roleService;
-        this.newsTagService = newsTagService;
     }
 
     /**
@@ -68,27 +60,5 @@ public class AdminController {
                 .id(user.getId())
                 .build();
         return Result.success(loginVO);
-    }
-
-    /**
-     * 添加角色
-     * @param roleDTO 角色信息
-     * @return 添加结果
-     */
-    @PostMapping("/addRole")
-    public Result<Object> addRole(@RequestBody RoleDTO roleDTO) {
-        roleService.addRole(roleDTO);
-        return Result.success();
-    }
-
-    /**
-     * 添加新闻标签
-     * @param newsTagDTO 新闻标签信息
-     * @return 添加结果
-     */
-    @PostMapping("/addNewsTag")
-    public Result<Object> addNewsTag(@RequestBody NewsTagDTO newsTagDTO) {
-        newsTagService.addNewsTag(newsTagDTO);
-        return Result.success();
     }
 }
