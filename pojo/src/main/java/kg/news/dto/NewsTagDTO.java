@@ -16,6 +16,10 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class NewsTagDTO implements Serializable {
     /**
+     * 标签ID
+     */
+    private Long id;
+    /**
      * 标签名
      */
     private String name;
