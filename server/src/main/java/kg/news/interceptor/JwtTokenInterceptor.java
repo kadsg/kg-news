@@ -25,11 +25,12 @@ public class JwtTokenInterceptor implements HandlerInterceptor {
 
     public boolean preHandle(@Nonnull HttpServletRequest request, @Nonnull HttpServletResponse response, @Nonnull Object handler) {
         // 判断当前拦截到的是Controller的方法还是其他资源，如果是其他资源，直接放行
-        if (handler instanceof HandlerMethod) {
+        if (!(handler instanceof HandlerMethod)) {
             return true;
         }
         // 从请求头中获取令牌
         String token = request.getHeader(jwtProperties.getTokenName());
+        token = JwtUtil.handleBearerPrefix(token);
         // 校验令牌
         log.info("jwt校验:{}", token);
         Map<String, ?> verifyToken = JwtUtil.verifyToken(jwtProperties.getSecretKey(), token);

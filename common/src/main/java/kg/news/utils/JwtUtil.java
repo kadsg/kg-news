@@ -39,4 +39,17 @@ public class JwtUtil {
                 .verify(token)
                 .getClaims();
     }
+
+    /**
+     * 处理带有 "Bearer " 前缀的令牌
+     *
+     * @param token 带有 "Bearer " 前缀的令牌
+     * @return 没有前缀的令牌
+     */
+    public static String handleBearerPrefix(String token) {
+        if (token != null && token.startsWith("Bearer ")) {
+            return token.substring(7);
+        }
+        return token;
+    }
 }
