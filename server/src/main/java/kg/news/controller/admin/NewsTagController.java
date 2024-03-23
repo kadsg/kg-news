@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * 新闻标签控制器
  */
-@RestController
+@RestController("adminNewsTagController")
 @RequestMapping("/admin")
 public class NewsTagController {
     private final NewsTagService newsTagService;

@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * 管理员控制器
  */
-@RestController
+@RestController("adminAccountController")
 @RequestMapping("/admin")
 public class AccountController {
     private final LoginService loginService;

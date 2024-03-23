@@ -1,1 +1,1 @@
-mvn -X smart-doc:html  -pl :server -am
+mvn -X smart-doc:postman  -pl :server -am

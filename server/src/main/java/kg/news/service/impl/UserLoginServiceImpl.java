@@ -18,7 +18,7 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * 用户登录服务实现类
  */
-@Service
+@Service("userLoginServiceImpl")
 public class UserLoginServiceImpl extends LoginServiceImpl implements LoginService {
 
     public UserLoginServiceImpl(UserRepository userRepository, JwtProperties jwtProperties, RoleService roleService, RoleMapperService roleMapperService) {

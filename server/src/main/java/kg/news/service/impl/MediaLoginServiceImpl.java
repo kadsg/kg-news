@@ -15,15 +15,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.InvocationTargetException;
 
-@Service("adminLoginServiceImpl")
-public class AdminLoginServiceImpl extends LoginServiceImpl implements LoginService {
-
-    public AdminLoginServiceImpl(UserRepository userRepository, JwtProperties jwtProperties, RoleService roleService, RoleMapperService roleMapperService) {
+@Service("mediaLoginServiceImpl")
+public class MediaLoginServiceImpl extends LoginServiceImpl implements LoginService {
+    public MediaLoginServiceImpl(UserRepository userRepository, JwtProperties jwtProperties, RoleService roleService, RoleMapperService roleMapperService) {
         super(userRepository, jwtProperties, roleService, roleMapperService);
     }
 
     /**
-     * 管理员注册
+     * 用户注册
      * @param loginDTO 注册信息
      * @return 用户实体
      */
@@ -31,7 +30,7 @@ public class AdminLoginServiceImpl extends LoginServiceImpl implements LoginServ
     public User register(LoginDTO loginDTO) {
         User user = super.register(loginDTO);
         user = userRepository.save(user);
-        Long roleId = roleService.getRole("admin").getId();
+        Long roleId = roleService.getRole("media").getId();
         RoleMapper roleMapper = RoleMapper.builder()
                 .userId(user.getId())
                 .roleId(roleId)

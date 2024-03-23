@@ -1,4 +1,4 @@
-package kg.news.controller.user;
+package kg.news.controller.media;
 
 import kg.news.dto.LoginDTO;
 import kg.news.entity.User;
@@ -6,17 +6,19 @@ import kg.news.result.Result;
 import kg.news.service.LoginService;
 import kg.news.vo.LoginVO;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 用户控制器
+ * 媒体账号控制器
  */
-@RestController("userAccountController")
-@RequestMapping("/user")
+@RestController("mediaAccountController")
+@RequestMapping("/media")
 public class AccountController {
     private final LoginService loginService;
-    public AccountController(@Qualifier("userLoginServiceImpl") LoginService loginService) {
+    public AccountController(@Qualifier("mediaLoginServiceImpl") LoginService loginService) {
         this.loginService = loginService;
     }
 

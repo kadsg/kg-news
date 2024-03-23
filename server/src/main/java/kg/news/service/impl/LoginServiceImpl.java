@@ -7,6 +7,7 @@ import kg.news.entity.User;
 import kg.news.exception.LoginException;
 import kg.news.properties.JwtProperties;
 import kg.news.repository.UserRepository;
+import kg.news.service.LoginService;
 import kg.news.service.RoleService;
 import kg.news.service.RoleMapperService;
 import kg.news.utils.JwtUtil;
@@ -17,7 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class LoginServiceImpl {
+public class LoginServiceImpl implements LoginService {
     final UserRepository userRepository;
     final JwtProperties jwtProperties;
     final RoleService roleService;
