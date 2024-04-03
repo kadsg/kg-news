@@ -26,11 +26,6 @@ public class News implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     /**
-     * 用户ID
-     */
-    @Column(nullable = false)
-    private Long userId;
-    /**
      * 标签ID
      */
     @Column(nullable = false)

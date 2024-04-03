@@ -3,6 +3,7 @@ server:
 
 debug: true
 
+
 logging:
   level:
     org:
@@ -53,3 +54,8 @@ kg:
     secret-key: ${kg.oss.secret-key}
     bucket: ${kg.oss.bucket}
 
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

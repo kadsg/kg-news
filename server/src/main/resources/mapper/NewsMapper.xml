@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="kg.news.mapper.NewsMapper">
+
+    <resultMap id="queryNewsMap" type="kg.news.vo.NewsSummaryVO">
+        <result column="id" property="newsId"/>
+        <result column="tag_id" property="tagId"/>
+        <result column="create_user" property="mediaId"/>
+        <result column="create_time" property="postTime"/>
+    </resultMap>
+
+    <select id="queryNews" parameterType="kg.news.dto.NewsPageQueryDTO" resultMap="queryNewsMap">
+        SELECT * FROM news
+        <where>
+            <choose>
+                <when test="newsId != null and newsId != '0'">
+                    id = #{newsId}
+                </when>
+                <otherwise>
+                    <if test="mediaId != '0' and mediaId != null">
+                        AND create_user = #{mediaId}
+                    </if>
+                    <if test="newsTagId != '0' and newsTagId != null">
+                        AND tag_id = #{newsTagId}
+                    </if>
+                    <if test="title != null and title != ''">
+                        AND title LIKE CONCAT('%', #{title}, '%')
+                    </if>
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+</mapper>
