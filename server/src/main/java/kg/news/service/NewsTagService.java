@@ -1,6 +1,7 @@
 package kg.news.service;
 
 import kg.news.dto.NewsTagDTO;
+import kg.news.entity.NewsTag;
 
 import java.util.List;
 import java.util.Map;
@@ -29,4 +30,11 @@ public interface NewsTagService {
      * @param newsTagDTO 新闻标签
      */
     void updateNewsTag(NewsTagDTO newsTagDTO);
+
+    /**
+     * 查询新闻标签
+     * @param tagId 标签ID
+     * @return 新闻标签
+     */
+    NewsTag queryNewsTag(Long tagId);
 }

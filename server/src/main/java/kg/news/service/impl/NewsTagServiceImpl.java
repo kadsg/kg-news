@@ -80,4 +80,8 @@ public class NewsTagServiceImpl implements NewsTagService {
         }
         newsTagRepository.save(newsTag);
     }
+
+    public NewsTag queryNewsTag(Long tagId) {
+        return newsTagRepository.findById(tagId).orElse(null);
+    }
 }

@@ -1,41 +1,39 @@
-package kg.news.entity;
+package kg.news.vo;
 
-import jakarta.persistence.*;
-import lombok.*;
-
-import java.io.Serial;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 历史记录表
+ * 浏览历史数据传输对象
  */
+@Data
 @Builder
-@Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-public class History implements Serializable {
-    @Serial
-    private static final long serialVersionUID = 1L;
+public class HistoryVO implements Serializable {
     /**
      * 主键ID
      */
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     /**
      * 用户ID
      */
-    @Column(nullable = false)
     private Long userId;
+    /**
+     * 发布媒体ID
+     */
     private Long mediaId;
+    /**
+     * 发布媒体名称
+     */
     private String mediaName;
     /**
      * 标签ID
      */
-    @Column(nullable = false)
     private Long tagId;
     /**
      * 标签名
@@ -44,26 +42,21 @@ public class History implements Serializable {
     /**
      * 新闻ID
      */
-    @Column(nullable = false)
     private Long newsId;
     /**
      * 标题
      */
-    @Column(nullable = false)
     private String title;
     /**
      * 封面
      */
-    @Column(nullable = false)
     private String cover;
     /**
      * 更新时间
      */
-    @Column(nullable = false)
     private LocalDateTime updateTime;
     /**
      * 删除标记
      */
-    @Column(nullable = false, columnDefinition = "TINYINT(1) DEFAULT 0", insertable = false)
-    private Boolean deleteFlag;
+    private Boolean deleted;
 }
