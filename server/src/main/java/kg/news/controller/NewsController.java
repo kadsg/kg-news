@@ -1,4 +1,4 @@
-package kg.news.controller.media;
+package kg.news.controller;
 
 import kg.news.dto.NewsDTO;
 import kg.news.dto.NewsPageQueryDTO;
@@ -12,8 +12,7 @@ import org.springframework.web.bind.annotation.*;
 /**
  * 新闻帖子管理控制器
  */
-@RestController("mediaNewsController")
-@RequestMapping("/media")
+@RequestMapping("/news")
 public class NewsController {
     private final NewsService newsService;
 
@@ -26,7 +25,7 @@ public class NewsController {
      * @param newsDTO 帖子信息
      * @return 发布结果
      */
-    @PostMapping("/news")
+    @PostMapping("")
     public Result<Object> post(@RequestBody NewsDTO newsDTO) {
         newsService.post(newsDTO);
         return Result.success();
@@ -37,7 +36,7 @@ public class NewsController {
      * @param newsId 新闻ID
      * @return 删除结果
      */
-    @DeleteMapping("/news/{newsId}")
+    @DeleteMapping("/{newsId}")
     public Result<Object> delete(@PathVariable Long newsId) {
         newsService.delete(newsId);
         return Result.success();
@@ -48,7 +47,7 @@ public class NewsController {
      * @param newsPageQueryDTO 查询条件
      * @return 新闻列表
      */
-    @GetMapping("/news")
+    @GetMapping("")
     public Result<PageResult<NewsSummaryVO>> queryNews(NewsPageQueryDTO newsPageQueryDTO) {
         PageResult<NewsSummaryVO> newsSummaryVOList = newsService.queryNews(newsPageQueryDTO);
         return Result.success(newsSummaryVOList);
@@ -59,7 +58,7 @@ public class NewsController {
      * @param newsId 新闻ID
      * @return 新闻详情
      */
-    @GetMapping("/news/detail")
+    @GetMapping("/detail")
     public Result<NewsDetailVO> queryNewsDetail(@RequestParam Long newsId) {
         NewsDetailVO newsDetailVO = newsService.queryNewsDetail(newsId);
         return Result.success(newsDetailVO);

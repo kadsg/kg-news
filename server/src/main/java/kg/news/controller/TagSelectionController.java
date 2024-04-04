@@ -1,4 +1,4 @@
-package kg.news.controller.user;
+package kg.news.controller;
 
 
 import kg.news.result.Result;
@@ -12,7 +12,7 @@ import java.util.Set;
  * 标签选择控制器
  */
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/tagSelection")
 public class TagSelectionController {
     private final TagSelectionService tagSelectionService;
 
@@ -25,7 +25,7 @@ public class TagSelectionController {
      * @param id 用户id
      * @return 标签选择
      */
-    @GetMapping("/tagSelection/{id}")
+    @GetMapping("/{id}")
     public Result<TagSelectionVO> getTagSelection(@PathVariable("id") Long id) {
         Set<Long> tagSelection = tagSelectionService.getTagSelection(id);
         TagSelectionVO tagSelectionVO = TagSelectionVO.builder()
@@ -40,7 +40,7 @@ public class TagSelectionController {
      * @param tagSelectionVO 标签选择
      * @return 保存结果
      */
-    @PutMapping("/tagSelection")
+    @PutMapping()
     public Result<Object> saveTagSelection(@RequestBody TagSelectionVO tagSelectionVO) {
         tagSelectionService.saveTagSelection(tagSelectionVO);
         return Result.success();
