@@ -3,12 +3,15 @@ package kg.news.service.impl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import kg.news.constant.NewsConstant;
+import kg.news.context.BaseContext;
 import kg.news.dto.NewsDTO;
 import kg.news.dto.NewsPageQueryDTO;
+import kg.news.entity.Favorite;
 import kg.news.entity.News;
 import kg.news.enumration.OperationType;
 import kg.news.exception.NewsException;
 import kg.news.mapper.NewsMapper;
+import kg.news.repository.FavoriteRepository;
 import kg.news.repository.NewsRepository;
 import kg.news.result.PageResult;
 import kg.news.service.NewsService;
@@ -17,6 +20,7 @@ import kg.news.utils.ServiceUtil;
 import kg.news.vo.NewsDetailVO;
 import kg.news.vo.NewsSummaryVO;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -25,11 +29,13 @@ public class NewsServiceImpl implements NewsService {
     private final NewsRepository newsRepository;
     private final NewsMapper newsMapper;
     private final UserService userService;
+    private final FavoriteRepository favoriteRepository;
 
-    public NewsServiceImpl(NewsRepository newsRepository, NewsMapper newsMapper, UserService userService) {
+    public NewsServiceImpl(NewsRepository newsRepository, NewsMapper newsMapper, UserService userService, FavoriteRepository favoriteRepository) {
         this.newsRepository = newsRepository;
         this.newsMapper = newsMapper;
         this.userService = userService;
+        this.favoriteRepository = favoriteRepository;
     }
 
     public void post(NewsDTO newsDTO) {
@@ -97,5 +103,75 @@ public class NewsServiceImpl implements NewsService {
                 .mediaName(mediaName)
                 .createTime(news.getCreateTime())
                 .build();
+    }
+
+    @Transactional
+    public void likeNews(Long newsId) {
+        News news = newsRepository.findById(newsId).orElse(null);
+        Long userId = BaseContext.getCurrentId();
+        Favorite favorite = favoriteRepository.findById(newsId).orElse(null);
+
+        if (news == null || news.getDeleteFlag()) {
+            throw new NewsException(NewsConstant.NEWS_NOT_FOUND);
+        }
+        // 如果没有点赞记录，则创建一条
+        if (favorite == null) {
+            favorite = Favorite.builder()
+                    .newsId(newsId)
+                    .userId(userId)
+                    .favorFlag(true)
+                    .build();
+            news.setLikeCount(news.getLikeCount() + 1);
+        } else {
+            // 如果有点赞记录，则取反
+            if (favorite.isFavorFlag()) {
+                news.setLikeCount(news.getLikeCount() - 1);
+            } else {
+                news.setLikeCount(news.getLikeCount() + 1);
+            }
+            favorite.setFavorFlag(!favorite.isFavorFlag());
+            // 如果有点踩记录，则取消
+            if (favorite.isDislikeFlag()) {
+                favorite.setDislikeFlag(false);
+                news.setUnlikeCount(news.getUnlikeCount() - 1);
+            }
+        }
+        favoriteRepository.save(favorite);
+        newsRepository.save(news);
+    }
+
+    @Transactional
+    public void dislikeNews(Long newsId) {
+        News news = newsRepository.findById(newsId).orElse(null);
+        Long userId = BaseContext.getCurrentId();
+        Favorite favorite = favoriteRepository.findById(newsId).orElse(null);
+
+        if (news == null || news.getDeleteFlag()) {
+            throw new NewsException(NewsConstant.NEWS_NOT_FOUND);
+        }
+        // 如果没有点踩记录，则创建一条
+        if (favorite == null) {
+            favorite = Favorite.builder()
+                    .newsId(newsId)
+                    .userId(userId)
+                    .dislikeFlag(true)
+                    .build();
+            news.setUnlikeCount(news.getUnlikeCount() + 1);
+        } else {
+            // 如果有点踩记录，则取反
+            if (favorite.isDislikeFlag()) {
+                news.setUnlikeCount(news.getUnlikeCount() - 1);
+            } else {
+                news.setUnlikeCount(news.getUnlikeCount() + 1);
+            }
+            favorite.setDislikeFlag(!favorite.isDislikeFlag());
+            // 如果有点赞记录，则取消
+            if (favorite.isFavorFlag()) {
+                favorite.setFavorFlag(false);
+                news.setLikeCount(news.getLikeCount() - 1);
+            }
+        }
+        favoriteRepository.save(favorite);
+        newsRepository.save(news);
     }
 }

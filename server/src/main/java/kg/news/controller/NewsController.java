@@ -10,8 +10,9 @@ import kg.news.vo.NewsSummaryVO;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * 新闻帖子管理控制器
+ * 新闻控制器
  */
+@RestController
 @RequestMapping("/news")
 public class NewsController {
     private final NewsService newsService;
@@ -62,5 +63,27 @@ public class NewsController {
     public Result<NewsDetailVO> queryNewsDetail(@RequestParam Long newsId) {
         NewsDetailVO newsDetailVO = newsService.queryNewsDetail(newsId);
         return Result.success(newsDetailVO);
+    }
+
+    /**
+     * 为新闻点赞或取消
+     * @param newsId 新闻ID
+     * @return 点赞结果
+     */
+    @PutMapping("/like/{id}")
+    public Result<Object> likeNews(@PathVariable("id") Long newsId) {
+        newsService.likeNews(newsId);
+        return Result.success();
+    }
+
+    /**
+     * 为新闻点踩或取消
+     * @param newsId 新闻ID
+     * @return 点踩结果
+     */
+    @PutMapping("/dislike/{id}")
+    public Result<Object> dislikeNews(@PathVariable("id") Long newsId) {
+        newsService.dislikeNews(newsId);
+        return Result.success();
     }
 }

@@ -39,4 +39,16 @@ public interface NewsService {
      * @return 新闻详情
      */
     NewsDetailVO queryNewsDetail(Long newsId);
+
+    /**
+     * 为新闻或取消
+     * @param newsId 新闻ID
+     */
+    void likeNews(Long newsId);
+
+    /**
+     * ”踩“新闻或取消
+     * @param newsId 新闻ID
+     */
+    void dislikeNews(Long newsId);
 }
