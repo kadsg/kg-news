@@ -26,11 +26,6 @@ public class Comment implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     /**
-     * 用户ID
-     */
-    @Column(nullable = false)
-    private Long userId;
-    /**
      * 新闻ID
      */
     @Column(nullable = false)
@@ -38,8 +33,11 @@ public class Comment implements Serializable {
     /**
      * 父评论ID
      */
-    @Column(nullable = false)
     private Long parentId;
+    /**
+     * 回复人ID
+     */
+    private Long replyId;
     /**
      * 评论内容
      */
