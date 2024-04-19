@@ -3,8 +3,10 @@ package kg.news.service.impl;
 import kg.news.dto.LoginDTO;
 import kg.news.entity.RoleMapper;
 import kg.news.entity.User;
+import kg.news.entity.UserFollowStatus;
 import kg.news.enumration.OperationType;
 import kg.news.properties.JwtProperties;
+import kg.news.repository.UserFollowStatusRepository;
 import kg.news.repository.UserRepository;
 import kg.news.service.LoginService;
 import kg.news.service.RoleMapperService;
@@ -17,8 +19,8 @@ import java.lang.reflect.InvocationTargetException;
 
 @Service("mediaLoginServiceImpl")
 public class MediaLoginServiceImpl extends LoginServiceImpl implements LoginService {
-    public MediaLoginServiceImpl(UserRepository userRepository, JwtProperties jwtProperties, RoleService roleService, RoleMapperService roleMapperService) {
-        super(userRepository, jwtProperties, roleService, roleMapperService);
+    public MediaLoginServiceImpl(UserRepository userRepository, JwtProperties jwtProperties, RoleService roleService, RoleMapperService roleMapperService, UserFollowStatusRepository userFollowStatusRepository) {
+        super(userRepository, jwtProperties, roleService, roleMapperService, userFollowStatusRepository);
     }
 
     /**
@@ -41,6 +43,7 @@ public class MediaLoginServiceImpl extends LoginServiceImpl implements LoginServ
             throw new RuntimeException(e);
         }
         roleMapperService.addRoleMapper(roleMapper);
+        userFollowStatusRepository.save(UserFollowStatus.builder().userId(user.getId()).build());
         return user;
     }
 }

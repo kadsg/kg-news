@@ -6,6 +6,7 @@ import kg.news.dto.LoginDTO;
 import kg.news.entity.User;
 import kg.news.exception.LoginException;
 import kg.news.properties.JwtProperties;
+import kg.news.repository.UserFollowStatusRepository;
 import kg.news.repository.UserRepository;
 import kg.news.service.LoginService;
 import kg.news.service.RoleService;
@@ -22,14 +23,15 @@ public class LoginServiceImpl implements LoginService {
     final UserRepository userRepository;
     final JwtProperties jwtProperties;
     final RoleService roleService;
-
     final RoleMapperService roleMapperService;
+    final UserFollowStatusRepository userFollowStatusRepository;
 
-    public LoginServiceImpl(UserRepository userRepository, JwtProperties jwtProperties, RoleService roleService, RoleMapperService roleMapperService) {
+    public LoginServiceImpl(UserRepository userRepository, JwtProperties jwtProperties, RoleService roleService, RoleMapperService roleMapperService, UserFollowStatusRepository userFollowStatusRepository) {
         this.userRepository = userRepository;
         this.jwtProperties = jwtProperties;
         this.roleService = roleService;
         this.roleMapperService = roleMapperService;
+        this.userFollowStatusRepository = userFollowStatusRepository;
     }
 
     public User login(LoginDTO loginDTO) {
