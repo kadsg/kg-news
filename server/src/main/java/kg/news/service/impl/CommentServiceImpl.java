@@ -80,7 +80,7 @@ public class CommentServiceImpl implements CommentService {
         if (comment == null || comment.getDeleteFlag()) {
             throw new CommentException(CommentConstant.COMMENT_NOT_FOUND);
         }
-        // 如果没有点赞记录，则创建一条
+        // 如果没有记录，则创建一条
         if (commentLike == null) {
             commentLike = CommentLike.builder()
                     .commentId(commentId)
@@ -89,13 +89,19 @@ public class CommentServiceImpl implements CommentService {
                     .build();
             comment.setLikeCount(comment.getLikeCount() + 1);
         } else {
-            // 如果有点赞记录，则取反
+            // 如果该记录为点赞，此时进行取消点赞操作
             if (commentLike.isLikeFlag()) {
                 comment.setLikeCount(comment.getLikeCount() - 1);
             } else {
+                // 如果该记录为”取消点赞“，此时进行点赞操作
                 comment.setLikeCount(comment.getLikeCount() + 1);
             }
             commentLike.setLikeFlag(!commentLike.isLikeFlag());
+        }
+        // 如果有踩记录，则取消踩
+        if (commentLike.isDislikeFlag()) {
+            commentLike.setDislikeFlag(false);
+            comment.setUnlikeCount(comment.getUnlikeCount() - 1);
         }
         likeRepository.save(commentLike);
         commentRepository.save(comment);
@@ -109,7 +115,7 @@ public class CommentServiceImpl implements CommentService {
         if (comment == null || comment.getDeleteFlag()) {
             throw new CommentException(CommentConstant.COMMENT_NOT_FOUND);
         }
-        // 如果没有踩记录，则创建一条
+        // 如果没有记录，则创建一条
         if (commentLike == null) {
             commentLike = CommentLike.builder()
                     .commentId(commentId)
@@ -118,13 +124,19 @@ public class CommentServiceImpl implements CommentService {
                     .build();
             comment.setUnlikeCount(comment.getUnlikeCount() + 1);
         } else {
-            // 如果有点赞记录，则取反
-            if (commentLike.isLikeFlag()) {
+            // 如果该记录为点踩，此时进行取消点踩操作
+            if (commentLike.isDislikeFlag()) {
                 comment.setUnlikeCount(comment.getUnlikeCount() - 1);
             } else {
+                // 如果该记录为”取消点踩“，此时进行点踩操作
                 comment.setUnlikeCount(comment.getUnlikeCount() + 1);
             }
             commentLike.setDislikeFlag(!commentLike.isDislikeFlag());
+        }
+        // 如果有点赞记录，则取消点赞
+        if (commentLike.isLikeFlag()) {
+            commentLike.setLikeFlag(false);
+            comment.setLikeCount(comment.getLikeCount() - 1);
         }
         likeRepository.save(commentLike);
         commentRepository.save(comment);
