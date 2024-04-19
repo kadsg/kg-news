@@ -12,6 +12,7 @@ import java.util.Map;
 /**
  * 新闻标签控制器
  */
+@RestController
 @RequestMapping("/newsTag")
 public class NewsTagController {
     private final NewsTagService newsTagService;

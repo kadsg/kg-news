@@ -76,11 +76,11 @@ public class User implements Serializable {
     /**
      * 启用标记
      */
-    @Column(nullable = false, columnDefinition = "TINYINT(1) DEFAULT 0", insertable = false)
+    @Column(nullable = false, insertable = false)
     private Boolean enabled;
     /**
      * 删除标记
      */
-    @Column(nullable = false, columnDefinition = "TINYINT(1) DEFAULT 0", insertable = false)
+    @Column(nullable = false, insertable = false)
     private Boolean deleteFlag;
 }

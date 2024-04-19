@@ -114,7 +114,7 @@ public class NewsServiceImpl implements NewsService {
         if (news == null || news.getDeleteFlag()) {
             throw new NewsException(NewsConstant.NEWS_NOT_FOUND);
         }
-        // 如果没有点赞记录，则创建一条
+        // 如果没有记录，则创建一条
         if (favorite == null) {
             favorite = Favorite.builder()
                     .newsId(newsId)
@@ -123,10 +123,11 @@ public class NewsServiceImpl implements NewsService {
                     .build();
             news.setLikeCount(news.getLikeCount() + 1);
         } else {
-            // 如果有点赞记录，则取反
+            // 如果该记录为“点赞“，此时进行取消点赞操作
             if (favorite.isFavorFlag()) {
                 news.setLikeCount(news.getLikeCount() - 1);
             } else {
+                // 如果该记录为”取消点赞“，此时进行点赞操作
                 news.setLikeCount(news.getLikeCount() + 1);
             }
             favorite.setFavorFlag(!favorite.isFavorFlag());
@@ -149,7 +150,7 @@ public class NewsServiceImpl implements NewsService {
         if (news == null || news.getDeleteFlag()) {
             throw new NewsException(NewsConstant.NEWS_NOT_FOUND);
         }
-        // 如果没有点踩记录，则创建一条
+        // 如果没有记录，则创建一条
         if (favorite == null) {
             favorite = Favorite.builder()
                     .newsId(newsId)
@@ -158,10 +159,11 @@ public class NewsServiceImpl implements NewsService {
                     .build();
             news.setUnlikeCount(news.getUnlikeCount() + 1);
         } else {
-            // 如果有点踩记录，则取反
+            // 如果该记录为“点踩“，此时进行取消点踩操作
             if (favorite.isDislikeFlag()) {
                 news.setUnlikeCount(news.getUnlikeCount() - 1);
             } else {
+                // 如果该记录为”取消点踩“，此时进行点踩操作
                 news.setUnlikeCount(news.getUnlikeCount() + 1);
             }
             favorite.setDislikeFlag(!favorite.isDislikeFlag());

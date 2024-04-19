@@ -42,11 +42,11 @@ public class CommentLike implements Serializable {
     /**
      * 是否”踩“
      */
-    @Column(nullable = false, columnDefinition = "TINYINT(1) DEFAULT 0")
+    @Column(nullable = false)
     private boolean dislikeFlag;
     /**
      * 是否删除
      */
-    @Column(nullable = false, columnDefinition = "TINYINT(1) DEFAULT 0")
+    @Column(nullable = false)
     private boolean deleteFlag;
 }

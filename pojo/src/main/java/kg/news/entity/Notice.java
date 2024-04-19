@@ -43,7 +43,7 @@ public class Notice implements Serializable {
     /**
      * 阅读标记
      */
-    @Column(nullable = false, columnDefinition = "TINYINT(1) DEFAULT 0", insertable = false)
+    @Column(nullable = false)
     private Boolean readFlag;
     /**
      * 创建时间
@@ -68,6 +68,6 @@ public class Notice implements Serializable {
     /**
      * 删除标记
      */
-    @Column(nullable = false, columnDefinition = "TINYINT(1) DEFAULT 0", insertable = false)
+    @Column(nullable = false, insertable = false)
     private Boolean deleteFlag;
 }

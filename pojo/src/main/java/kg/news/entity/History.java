@@ -64,6 +64,6 @@ public class History implements Serializable {
     /**
      * 删除标记
      */
-    @Column(nullable = false, columnDefinition = "TINYINT(1) DEFAULT 0", insertable = false)
+    @Column(nullable = false, insertable = false)
     private Boolean deleteFlag;
 }
