@@ -2,6 +2,9 @@ package kg.news.service;
 
 import kg.news.dto.RoleDTO;
 import kg.news.entity.Role;
+import kg.news.result.PageResult;
+import kg.news.vo.RoleVO;
+
 
 public interface RoleService {
     /**
@@ -16,4 +19,10 @@ public interface RoleService {
      * @return 角色id
      */
     Role getRole(String roleName);
+
+    /**
+     * 获取角色列表
+     * @return 角色列表
+     */
+    PageResult<RoleVO> queryRoles();
 }
