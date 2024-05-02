@@ -19,6 +19,16 @@ public class ServiceUtil {
         return DigestUtils.md5DigestAsHex(password.getBytes());
     }
 
+/**
+     * 自动填充创建时间、更新时间、创建人、更新人
+     *
+     * @param entity 实体
+     * @param type   操作类型
+     * @param <S>    实体类型
+     * @throws NoSuchMethodException     异常
+     * @throws InvocationTargetException 异常
+     * @throws IllegalAccessException    异常
+     */
     public static <S> void autoFill(S entity, OperationType type) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         enum MethodName {
 

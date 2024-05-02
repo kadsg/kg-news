@@ -71,7 +71,7 @@ public class NewsServiceImpl implements NewsService {
     }
 
     public PageResult<NewsSummaryVO> queryNews(NewsPageQueryDTO newsPageQueryDTO) {
-        int page = newsPageQueryDTO.getPage();
+        int page = newsPageQueryDTO.getPageNum();
         int pageSize = newsPageQueryDTO.getPageSize();
         if (page <= 0 || pageSize <= 0) {
             // 页码和每页大小必须大于0，未指定则默认为1和10
@@ -81,7 +81,7 @@ public class NewsServiceImpl implements NewsService {
         PageHelper.startPage(page, pageSize);
         Page<NewsSummaryVO> newsList = newsMapper.queryNews(newsPageQueryDTO);
         newsList.forEach(newsSummaryVO -> newsSummaryVO.setMediaName(userService.queryUserById(newsSummaryVO.getMediaId()).getNickname()));
-        return new PageResult<>(newsList.getTotal(), newsList.getResult());
+        return new PageResult<>(page, pageSize, newsList.getTotal(), newsList.getResult());
     }
 
     public News queryNews(Long newsId) {

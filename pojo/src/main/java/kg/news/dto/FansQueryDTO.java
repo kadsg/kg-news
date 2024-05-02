@@ -2,6 +2,7 @@ package kg.news.dto;
 
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 
@@ -9,17 +10,10 @@ import java.io.Serializable;
  * 分页查询DTO
  */
 @Data
-public class FansQueryDTO implements Serializable {
+@EqualsAndHashCode(callSuper = true)
+public class FansQueryDTO  extends PageRequestDTO implements Serializable {
     /**
      * 用户ID
      */
     private Long userId;
-    /**
-     * 页码
-     */
-    private int page;
-    /**
-     * 每页大小
-     */
-    private int pageSize;
 }

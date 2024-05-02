@@ -13,11 +13,19 @@ import java.util.List;
 @AllArgsConstructor
 public class PageResult<T> implements Serializable {
     /**
-     * 总数
+     * 页码
      */
-    private Long total;
+    int pageNum;
     /**
-     * 当前页数据
+     * 每页大小
      */
-    private List<T> records;
+    int pageSize;
+    /**
+     * 总记录数
+     */
+    long total;
+    /**
+     * 数据
+     */
+    private List<T> list;
 }

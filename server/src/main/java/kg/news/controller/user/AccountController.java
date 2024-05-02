@@ -1,7 +1,6 @@
 package kg.news.controller.user;
 
 import kg.news.dto.LoginDTO;
-import kg.news.entity.User;
 import kg.news.result.Result;
 import kg.news.service.LoginService;
 import kg.news.vo.LoginVO;
@@ -27,12 +26,7 @@ public class AccountController {
      */
     @PostMapping("/login")
     public Result<LoginVO> login(@RequestBody LoginDTO loginDTO) {
-        User user = loginService.login(loginDTO);
-        String token = loginService.getToken(user);
-        LoginVO loginVO = LoginVO.builder()
-                .id(user.getId())
-                .token(token)
-                .build();
+        LoginVO loginVO = loginService.login(loginDTO);
         return Result.success(loginVO);
     }
 
@@ -52,10 +46,8 @@ public class AccountController {
      */
     @PostMapping("/register")
     public Result<LoginVO> register(@RequestBody LoginDTO loginDTO) {
-        User user = loginService.register(loginDTO);
-        LoginVO loginVO = LoginVO.builder()
-                .id(user.getId())
-                .build();
+        loginService.register(loginDTO);
+        LoginVO loginVO = loginService.login(loginDTO);
         return Result.success(loginVO);
     }
 }

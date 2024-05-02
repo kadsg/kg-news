@@ -13,6 +13,7 @@ import kg.news.service.RoleService;
 import kg.news.service.RoleMapperService;
 import kg.news.utils.JwtUtil;
 import kg.news.utils.ServiceUtil;
+import kg.news.vo.LoginVO;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -34,7 +35,7 @@ public class LoginServiceImpl implements LoginService {
         this.userFollowStatusRepository = userFollowStatusRepository;
     }
 
-    public User login(LoginDTO loginDTO) {
+    public LoginVO login(LoginDTO loginDTO) {
         String username = loginDTO.getUsername();
         String password = loginDTO.getPassword();
         User user = userRepository.findByUsername(username);
@@ -47,7 +48,13 @@ public class LoginServiceImpl implements LoginService {
         if (user.getEnabled() == StatusConstant.DIS_ENABLED) {
             throw new LoginException(LoginConstant.ACCOUNT_LOCKED);
         }
-        return user;
+        String token = getToken(user);
+        long ttl = jwtProperties.getTtl();
+        return LoginVO.builder()
+                .id(user.getId())
+                .token(token)
+                .expires(System.currentTimeMillis() + ttl)
+                .build();
     }
 
     public String getToken(User user) {

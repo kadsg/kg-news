@@ -20,6 +20,10 @@ public class LoginVO implements Serializable {
      */
     private String token;
     /**
+     * 过期时间戳
+     */
+    private Long expires;
+    /**
      * 拓展字段
      */
     private String code;

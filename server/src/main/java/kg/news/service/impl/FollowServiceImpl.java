@@ -12,6 +12,7 @@ import kg.news.service.FollowService;
 import kg.news.service.UserService;
 import kg.news.vo.FansVO;
 import kg.news.vo.FollowVO;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,7 +65,7 @@ public class FollowServiceImpl implements FollowService {
     }
 
     public PageResult<FollowVO> queryFollowList(FollowQueryDTO followQueryDTO) {
-        int page = followQueryDTO.getPage();
+        int page = followQueryDTO.getPageNum();
         int pageSize = followQueryDTO.getPageSize();
         Long userId = followQueryDTO.getUserId();
         // 如果page或pageSize非法，则设置默认值
@@ -78,7 +79,8 @@ public class FollowServiceImpl implements FollowService {
         }
         // 查询关注列表
         PageRequest pageRequest = PageRequest.of(page - 1, pageSize);
-        List<Follow> followList = followRepository.findAllByUserId(userId, pageRequest);
+        Page<Follow> followPage = followRepository.findAllByUserId(userId, pageRequest);
+        List<Follow> followList = followPage.getContent();
         // 转换为VO
         List<FollowVO> followVOList = followList
                 .stream()
@@ -88,11 +90,11 @@ public class FollowServiceImpl implements FollowService {
                                 .followName(userService.queryUserById(follow.getFollowUserId()).getNickname())
                                 .build())
                 .toList();
-        return new PageResult<>((long) followVOList.size(), followVOList);
+        return new PageResult<>(page, pageSize, followPage.getTotalElements(), followVOList);
     }
 
     public PageResult<FansVO> queryFansList(FansQueryDTO fansQueryDTO) {
-        int page = fansQueryDTO.getPage();
+        int page = fansQueryDTO.getPageNum();
         int pageSize = fansQueryDTO.getPageSize();
         Long userId = fansQueryDTO.getUserId();
         // 如果page或pageSize非法，则设置默认值
@@ -106,7 +108,8 @@ public class FollowServiceImpl implements FollowService {
         }
         // 查询关注列表
         PageRequest pageRequest = PageRequest.of(page - 1, pageSize);
-        List<Follow> followList = followRepository.findAllByFollowUserId(userId, pageRequest);
+        Page<Follow> followPage = followRepository.findAllByFollowUserId(userId, pageRequest);
+        List<Follow> followList = followPage.getContent();
         List<FansVO> fansVOList = followList
                 .stream()
                 .map(follow ->
@@ -115,6 +118,6 @@ public class FollowServiceImpl implements FollowService {
                                 .fansName(userService.queryUserById(follow.getUserId()).getNickname())
                                 .build())
                 .toList();
-        return new PageResult<>((long) fansVOList.size(), fansVOList);
+        return new PageResult<>(page, pageSize, followPage.getTotalElements(), fansVOList);
     }
 }

@@ -40,7 +40,7 @@ public class HistoryServiceImpl implements HistoryService {
     }
 
     public PageResult<HistoryVO> queryHistory(HistoryQueryDTO historyQueryDTO) {
-        int page = historyQueryDTO.getPage();
+        int page = historyQueryDTO.getPageNum();
         int pageSize = historyQueryDTO.getPageSize();
         if (page <= 0 || pageSize <= 0) {
             // 页码和每页大小必须大于0，未指定则默认为1和10
@@ -71,7 +71,7 @@ public class HistoryServiceImpl implements HistoryService {
                     .deleted(news.getDeleteFlag())
                     .build();
         }).toList();
-        return new PageResult<>(histories.getTotalElements(), historyVOList);
+        return new PageResult<>(page, pageSize, histories.getTotalElements(), historyVOList);
     }
 
     public void delete(Long id) {

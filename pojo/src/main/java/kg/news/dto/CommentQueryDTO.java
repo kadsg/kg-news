@@ -1,6 +1,6 @@
 package kg.news.dto;
 
-import lombok.Data;
+import lombok.*;
 
 import java.io.Serializable;
 
@@ -8,7 +8,11 @@ import java.io.Serializable;
  * 评论查询DTO
  */
 @Data
-public class CommentQueryDTO implements Serializable {
+@EqualsAndHashCode(callSuper = true)
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class CommentQueryDTO extends PageRequestDTO implements Serializable {
     /**
      * 评论ID
      */
@@ -25,12 +29,4 @@ public class CommentQueryDTO implements Serializable {
      * 回复人ID
      */
     private Long replyId;
-    /**
-     * 评论内容
-     */
-    private int page;
-    /**
-     * 评论内容
-     */
-    private int size;
 }

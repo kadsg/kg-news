@@ -1,9 +1,6 @@
 package kg.news.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.io.Serializable;
 
@@ -11,20 +8,13 @@ import java.io.Serializable;
  * 浏览历史数据传输对象（查询）
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class HistoryQueryDTO implements Serializable {
+public class HistoryQueryDTO  extends PageRequestDTO implements Serializable {
     /**
      * 用户id
      */
     private Long userId;
-    /**
-     * 页码
-     */
-    private int page;
-    /**
-     * 每页大小
-     */
-    private int pageSize;
 }

@@ -2,14 +2,15 @@ package kg.news.service;
 
 import kg.news.dto.LoginDTO;
 import kg.news.entity.User;
+import kg.news.vo.LoginVO;
 
 public interface LoginService {
     /**
      * 登录
      * @param loginDTO 登录信息
-     * @return 用户信息
+     * @return 登录结果
      */
-    User login(LoginDTO loginDTO);
+    LoginVO login(LoginDTO loginDTO);
 
     /**
      * 获取用户令牌

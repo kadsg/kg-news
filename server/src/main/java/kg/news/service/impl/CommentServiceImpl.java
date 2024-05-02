@@ -40,8 +40,8 @@ public class CommentServiceImpl implements CommentService {
     }
 
     public PageResult<CommentVO> queryNewsCommentList(CommentQueryDTO commentDTO) {
-        int page = commentDTO.getPage();
-        int size = commentDTO.getSize();
+        int page = commentDTO.getPageNum();
+        int size = commentDTO.getPageSize();
         if (page <= 0 || size <= 0) {
             page = 1;
             size = 10;
@@ -56,7 +56,7 @@ public class CommentServiceImpl implements CommentService {
         if (result.isEmpty()) {
             throw new CommentException(CommentConstant.COMMENT_NOT_FOUND);
         }
-        return new PageResult<>((long) result.size(), result);
+        return new PageResult<>(page, size, commentVOS.getTotal(), result);
     }
 
     public void deleteComment(Long commentId) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
