@@ -4,8 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDateTime;
 
 /**
  * 新闻标签视图对象
@@ -14,7 +13,35 @@ import java.util.Map;
 @Builder
 public class NewsTagVO implements Serializable {
     /**
-     * 标签列表
+     * 标签id
      */
-    private List<Map<Long, String>> tags;
+    private Long tagId;
+    /**
+     * 标签名
+     */
+    private String tagName;
+    /**
+     * 描述
+     */
+    private String description;
+    /**
+     * 创建时间
+     */
+    private LocalDateTime createTime;
+    /**
+     * 更新时间
+     */
+    private LocalDateTime updateTime;
+    /**
+     * 创建用户id
+     */
+    private Long createUserId;
+    /**
+     * 更新用户id
+     */
+    private Long updateUserId;
+    /**
+     * 创建用户名
+     */
+    private Boolean deleteFlag;
 }

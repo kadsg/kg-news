@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="kg.news.mapper.NewsTagMapper">
+
+     <resultMap id="queryNewsTagMap" type="kg.news.entity.NewsTag">
+        <result column="tagId" property="id"/>
+    </resultMap>
+
+    <select id="queryNewsTag" parameterType="kg.news.dto.NewsTagQueryDTO" resultMap="queryNewsTagMap">
+        SELECT * FROM news_tag
+        <where>
+            <choose>
+                <when test="tagId != null and tagId != '0'">
+                    id = #{tagId}
+                </when>
+                <otherwise>
+                    <if test="tagName != '' and tagName != null">
+                        AND name = #{tagName}
+                    </if>
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+</mapper>
