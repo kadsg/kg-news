@@ -60,4 +60,12 @@ public class NewsSummaryVO implements Serializable {
      * 发布时间
      */
     private LocalDateTime postTime;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        NewsSummaryVO that = (NewsSummaryVO) o;
+        return this.newsId.equals(that.newsId);
+    }
 }

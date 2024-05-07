@@ -8,21 +8,31 @@ import kg.news.dto.NewsDTO;
 import kg.news.dto.NewsPageQueryDTO;
 import kg.news.entity.Favorite;
 import kg.news.entity.News;
+import kg.news.entity.NewsKeyWord;
 import kg.news.enumration.OperationType;
 import kg.news.exception.NewsException;
 import kg.news.mapper.NewsMapper;
 import kg.news.repository.FavoriteRepository;
+import kg.news.repository.NewsKeyWordRepository;
 import kg.news.repository.NewsRepository;
 import kg.news.result.PageResult;
 import kg.news.service.NewsService;
 import kg.news.service.UserService;
+import kg.news.utils.KeyWordUtil;
 import kg.news.utils.ServiceUtil;
 import kg.news.vo.NewsDetailVO;
 import kg.news.vo.NewsSummaryVO;
+import org.ansj.app.keyword.Keyword;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class NewsServiceImpl implements NewsService {
@@ -30,14 +40,17 @@ public class NewsServiceImpl implements NewsService {
     private final NewsMapper newsMapper;
     private final UserService userService;
     private final FavoriteRepository favoriteRepository;
+    private final NewsKeyWordRepository newsKeyWordRepository;
 
-    public NewsServiceImpl(NewsRepository newsRepository, NewsMapper newsMapper, UserService userService, FavoriteRepository favoriteRepository) {
+    public NewsServiceImpl(NewsRepository newsRepository, NewsMapper newsMapper, UserService userService, FavoriteRepository favoriteRepository, NewsKeyWordRepository newsKeyWordRepository) {
         this.newsRepository = newsRepository;
         this.newsMapper = newsMapper;
         this.userService = userService;
         this.favoriteRepository = favoriteRepository;
+        this.newsKeyWordRepository = newsKeyWordRepository;
     }
 
+    @Transactional
     public void post(NewsDTO newsDTO) {
         News news = News.builder()
                 .tagId(newsDTO.getTagId())
@@ -50,7 +63,33 @@ public class NewsServiceImpl implements NewsService {
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
-        newsRepository.save(news);
+        News save = newsRepository.save(news);
+        // TODO: 以下步骤非常耗时，需要异步处理！！！
+        // 提取关键词
+        List<Keyword> keyWordList = KeyWordUtil.getKeyWordList(newsDTO.getTitle(), newsDTO.getContent(), 5);
+        // 构造关键词权重Map
+        Map<String, Double> keyWordMap = new HashMap<>();
+        keyWordList.forEach(keyword -> {
+            String key = keyword.getName();
+            Double weight = keyword.getScore();
+            keyWordMap.put(key, weight);
+        });
+        System.out.println("关键词权重Map：" + keyWordMap);
+        // 关键词权重Map示例：
+        // {乌方=138.15585324319431, 乌多=144.2370822012652, 大规模=55.26272908435627, 俄军=55.26262506735223, 设施=55.26206753491392}
+        // 将其转换为JSON字符串
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            String asString = objectMapper.writeValueAsString(keyWordMap);
+            NewsKeyWord newsKeyWord = NewsKeyWord.builder()
+                    .newsId(save.getId())
+                    .keyWord(asString)
+                    .build();
+            // 保存该关键词
+            newsKeyWordRepository.save(newsKeyWord);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void delete(Long newsId) {
@@ -175,5 +214,45 @@ public class NewsServiceImpl implements NewsService {
         }
         favoriteRepository.save(favorite);
         newsRepository.save(news);
+    }
+
+    public List<News> getAllNews() {
+        return newsRepository.findAll();
+    }
+
+    public void update(News news) {
+        try {
+            ServiceUtil.autoFill(news, OperationType.UPDATE);
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+        newsRepository.save(news);
+    }
+
+    public List<NewsSummaryVO> queryViewHotNews(Pageable pageable) {
+        // Pageable pageable = PageRequest.of(pageNum - 1, pageSize);
+        // 映射到MyBatis的分页插件
+        int pageNum = pageable.getPageNumber() + 1;
+        int pageSize = pageable.getPageSize();
+        PageHelper.startPage(pageNum, pageSize);
+        return newsMapper.findTopByViewCount();
+    }
+
+    public List<NewsSummaryVO> queryLikedNews(Pageable pageable) {
+        // Pageable pageable = PageRequest.of(pageNum - 1, pageSize);
+        // 映射到MyBatis的分页插件
+        int pageNum = pageable.getPageNumber() + 1;
+        int pageSize = pageable.getPageSize();
+        PageHelper.startPage(pageNum, pageSize);
+        return newsMapper.findTopByLikeCount();
+    }
+
+    public List<NewsSummaryVO> queryCommentedNews(Pageable pageable) {
+        // Pageable pageable = PageRequest.of(pageNum - 1, pageSize);
+        // 映射到MyBatis的分页插件
+        int pageNum = pageable.getPageNumber() + 1;
+        int pageSize = pageable.getPageSize();
+        PageHelper.startPage(pageNum, pageSize);
+        return newsMapper.findTopByCommentCount();
     }
 }

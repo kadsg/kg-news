@@ -30,4 +30,20 @@
             </choose>
         </where>
     </select>
+
+    <select id="findTopByViewCount" resultMap="queryNewsMap">
+        SELECT * FROM news
+        ORDER BY view_count DESC
+    </select>
+
+    <select id="findTopByCommentCount" resultMap="queryNewsMap">
+        SELECT * FROM news
+        ORDER BY comment_count DESC
+    </select>
+
+    <select id="findTopByLikeCount" resultMap="queryNewsMap">
+        SELECT * FROM news
+        ORDER BY like_count DESC
+    </select>
+
 </mapper>

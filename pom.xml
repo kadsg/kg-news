@@ -36,7 +36,23 @@
         <fasterxml.version>2.16.0</fasterxml.version>
         <smart-doc.version>2.7.7</smart-doc.version>
         <mybatis-spring.version>3.0.3</mybatis-spring.version>
+        <mahout.version>0.9</mahout.version>
+        <deeplearning4j.version>1.0.0-M2.1</deeplearning4j.version>
+        <commons.math3.version>3.6.1</commons.math3.version>
+        <hanlp.version>portable-1.8.4</hanlp.version>
+        <hanlp-restful.version>0.0.14</hanlp-restful.version>
+        <ansj.version>5.0.3</ansj.version>
+        <jackjson.version>2.12.3</jackjson.version>
+        <fastjson.version>2.0.48</fastjson.version>
+        <similarity.version>1.1.6</similarity.version>
     </properties>
+
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
 
     <dependencyManagement>
         <dependencies>
@@ -90,6 +106,36 @@
                 <groupId>org.mybatis.spring.boot</groupId>
                 <artifactId>mybatis-spring-boot-starter</artifactId>
                 <version>${mybatis-spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>fastjson</artifactId>
+                <version>${fastjson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.mahout</groupId>
+                <artifactId>mahout-core</artifactId>
+                <version>${mahout.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hankcs</groupId>
+                <artifactId>hanlp</artifactId>
+                <version>${hanlp.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hankcs.hanlp.restful</groupId>
+                <artifactId>hanlp-restful</artifactId>
+                <version>${hanlp-restful.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.ansj</groupId>
+                <artifactId>ansj_seg</artifactId>
+                <version>${ansj.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.shibing624</groupId>
+                <artifactId>similarity</artifactId>
+                <version>${similarity.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

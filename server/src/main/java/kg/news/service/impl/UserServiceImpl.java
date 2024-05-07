@@ -1,6 +1,7 @@
 package kg.news.service.impl;
 
 import kg.news.constant.RoleConstant;
+import kg.news.context.BaseContext;
 import kg.news.dto.UserQueryDTO;
 import kg.news.entity.Role;
 import kg.news.entity.RoleMapper;
@@ -31,6 +32,10 @@ public class UserServiceImpl implements UserService {
     }
 
     public User queryUserById(Long userId) {
+        if (userId == null || userId == 0) {
+            // 默认查询自身信息
+            userId = BaseContext.getCurrentId();
+        }
         return userRepository.findById(userId).orElse(null);
     }
 
@@ -99,5 +104,12 @@ public class UserServiceImpl implements UserService {
                     .build()).toList();
             return new PageResult<>(page, pageSize, roleMapperPage.getTotalElements(), list);
         }
+    }
+
+    public List<User> queryAllUser() {
+        // 由User这一角色的id为3且暂时没有变动的可能，直接写死
+        List<RoleMapper> roleMapperList = roleMapperRepository.findRoleMappersByRoleId(3L);
+        List<Long> userIds = roleMapperList.stream().map(RoleMapper::getUserId).toList();
+        return userRepository.findAllByIdIn(userIds);
     }
 }

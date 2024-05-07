@@ -3,25 +3,24 @@ package kg.news.service.impl;
 import kg.news.context.BaseContext;
 import kg.news.dto.HistoryQueryDTO;
 import kg.news.dto.HistorySaveDTO;
-import kg.news.entity.History;
-import kg.news.entity.News;
-import kg.news.entity.NewsTag;
-import kg.news.entity.User;
-import kg.news.enumration.OperationType;
+import kg.news.entity.*;
 import kg.news.repository.HistoryRepository;
+import kg.news.repository.NewsKeyWordRepository;
+import kg.news.repository.UserInterestRepository;
 import kg.news.result.PageResult;
 import kg.news.service.HistoryService;
 import kg.news.service.NewsService;
 import kg.news.service.NewsTagService;
 import kg.news.service.UserService;
-import kg.news.utils.ServiceUtil;
+import kg.news.utils.KeyWordUtil;
 import kg.news.vo.HistoryVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -31,12 +30,16 @@ public class HistoryServiceImpl implements HistoryService {
     private final NewsService newsService;
     private final UserService userService;
     private final NewsTagService newsTagService;
+    private final UserInterestRepository userInterestRepository;
+    private final NewsKeyWordRepository newsKeyWordRepository;
 
-    public HistoryServiceImpl(HistoryRepository historyRepository, NewsService newsService, UserService userService, NewsTagService newsTagService) {
+    public HistoryServiceImpl(HistoryRepository historyRepository, NewsService newsService, UserService userService, NewsTagService newsTagService, UserInterestRepository userInterestRepository, NewsKeyWordRepository newsKeyWordRepository) {
         this.historyRepository = historyRepository;
         this.newsService = newsService;
         this.userService = userService;
         this.newsTagService = newsTagService;
+        this.userInterestRepository = userInterestRepository;
+        this.newsKeyWordRepository = newsKeyWordRepository;
     }
 
     public PageResult<HistoryVO> queryHistory(HistoryQueryDTO historyQueryDTO) {
@@ -74,31 +77,52 @@ public class HistoryServiceImpl implements HistoryService {
         return new PageResult<>(page, pageSize, histories.getTotalElements(), historyVOList);
     }
 
-    public void delete(Long id) {
-        historyRepository.findById(id).ifPresent(history -> {
-            try {
-                ServiceUtil.autoFill(history, OperationType.UPDATE);
-            } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-            historyRepository.save(history);
-        }
-        );
+    public List<History> getHistoryByUserId(Long userId, Pageable pageable) {
+        return historyRepository.findByUserId(userId, pageable).toList();
     }
 
+    public void delete(Long id) {
+        historyRepository.deleteById(id);
+    }
+
+    public List<History> getAllHistory() {
+        return historyRepository.findAll();
+    }
+
+    @Transactional
     public void save(HistorySaveDTO historySaveDTO) {
         Long newsId = historySaveDTO.getNewsId();
         Long userId = BaseContext.getCurrentId();
         History history = historyRepository.findByUserIdAndNewsId(userId, newsId);
+        // 保存浏览历史记录
         if (history != null) {
             // 如果已存在浏览记录，则更新时间
             history.setUpdateTime(LocalDateTime.now());
             historyRepository.save(history);
-            return;
+        } else {
+            // 如果不存在浏览记录，则新增
+            history = new History();
+            BeanUtils.copyProperties(historySaveDTO, history);
+            history.setUserId(userId);
+            historyRepository.save(history);
+
+            // TODO: 此处开始异步
+            // 更新新闻浏览次数
+            News news = newsService.queryNews(newsId);
+            news.setViewCount(news.getViewCount() + 1);
+            newsService.update(news);
+
+            // 更新用户兴趣词表
+            UserInterest interest = userInterestRepository.findByUserId(userId);
+            String userInterestJson = interest.getInterest();
+            String newsKeywordsJson = newsKeyWordRepository.findByNewsId(newsId).getKeyWord();
+
+            double threshold = 0.7; // 相似度阈值
+            double convertValue = 0.7; // 权重转换值
+
+            String newInterestJson = KeyWordUtil.updateKeyWord(userInterestJson, newsKeywordsJson, KeyWordUtil.UPDATE_TYPE.INCREASE, threshold, convertValue);
+            interest.setInterest(newInterestJson);
+            userInterestRepository.save(interest);
         }
-        history = new History();
-        BeanUtils.copyProperties(historySaveDTO, history);
-        history.setUserId(userId);
-        historyRepository.save(history);
     }
 }

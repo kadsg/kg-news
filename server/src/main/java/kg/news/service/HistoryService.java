@@ -2,8 +2,12 @@ package kg.news.service;
 
 import kg.news.dto.HistoryQueryDTO;
 import kg.news.dto.HistorySaveDTO;
+import kg.news.entity.History;
 import kg.news.result.PageResult;
 import kg.news.vo.HistoryVO;
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 public interface HistoryService {
     /**
@@ -21,9 +25,21 @@ public interface HistoryService {
     PageResult<HistoryVO> queryHistory(HistoryQueryDTO historyQueryDTO);
 
     /**
+     * 分页获取指定用户的浏览历史记录
+     *
+     * @param userId 用户id
+     */
+    List<History> getHistoryByUserId(Long userId, Pageable pageable);
+
+    /**
      * 删除浏览历史记录
      *
      * @param id 浏览历史记录id
      */
     void delete(Long id);
+
+    /**
+     * 获取所有浏览历史记录
+     */
+    List<History> getAllHistory();
 }

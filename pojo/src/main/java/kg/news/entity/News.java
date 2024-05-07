@@ -86,4 +86,16 @@ public class News implements Serializable {
      */
     @Column(nullable = false, insertable = false)
     private Boolean deleteFlag;
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        News news = (News) obj;
+        return id.equals(news.id);
+    }
 }
