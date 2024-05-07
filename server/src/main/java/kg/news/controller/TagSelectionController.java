@@ -11,6 +11,7 @@ import java.util.Set;
 /**
  * 标签选择控制器
  */
+@CrossOrigin
 @RestController
 @RequestMapping("/tagSelection")
 public class TagSelectionController {

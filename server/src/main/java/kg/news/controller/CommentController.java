@@ -13,6 +13,7 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * 评论管理控制器
  */
+@CrossOrigin
 @RestController("/comment")
 public class CommentController {
     private final CommentService commentService;

@@ -9,8 +9,9 @@ import org.springframework.web.bind.annotation.*;
 
 
 /**
- * 用户控制器
+ * 用户账号控制器
  */
+@CrossOrigin
 @RestController("userAccountController")
 @RequestMapping("/user")
 public class AccountController {

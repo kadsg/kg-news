@@ -5,6 +5,7 @@ import kg.news.result.PageResult;
 import kg.news.result.Result;
 import kg.news.service.FollowService;
 import kg.news.vo.FansVO;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * 粉丝管理
  */
+@CrossOrigin
 @RestController
 @RequestMapping("/fans")
 public class FansController {

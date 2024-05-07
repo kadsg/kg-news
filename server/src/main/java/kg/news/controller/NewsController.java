@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 /**
  * 新闻控制器
  */
+@CrossOrigin
 @RestController
 @RequestMapping("/news")
 public class NewsController {

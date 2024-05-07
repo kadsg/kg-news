@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 /**
  * 角色控制器
  */
+@CrossOrigin
 @RestController
 @RequestMapping("/role")
 public class RoleController {

@@ -3,6 +3,7 @@ package kg.news.controller;
 import kg.news.constant.FileConstant;
 import kg.news.result.Result;
 import kg.news.utils.OssUtil;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,6 +15,7 @@ import java.util.UUID;
 /**
  * 通用接口
  */
+@CrossOrigin
 @RestController
 @RequestMapping("/common")
 public class CommonController {

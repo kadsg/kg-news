@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 /**
  * 账号关注
  */
+@CrossOrigin
 @RestController
 @RequestMapping("/follow")
 public class FollowController {

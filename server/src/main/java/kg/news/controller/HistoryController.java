@@ -12,6 +12,7 @@ import kg.news.service.HistoryService;
 /**
  * 浏览历史记录
  */
+@CrossOrigin
 @RestController
 @RequestMapping("/history")
 public class HistoryController {
