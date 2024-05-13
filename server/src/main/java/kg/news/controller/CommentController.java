@@ -14,7 +14,8 @@ import java.lang.reflect.InvocationTargetException;
  * 评论管理控制器
  */
 @CrossOrigin
-@RestController("/comment")
+@RestController
+@RequestMapping("/comment")
 public class CommentController {
     private final CommentService commentService;
 
@@ -28,8 +29,8 @@ public class CommentController {
      * @param commentDTO 评论查询DTO
      * @return 新闻评论列表
      */
-    @GetMapping("/list")
-    public Result<PageResult<CommentVO>> getNewsCommentList(CommentQueryDTO commentDTO) {
+    @PostMapping("/list")
+    public Result<PageResult<CommentVO>> getNewsCommentList(@RequestBody CommentQueryDTO commentDTO) {
         PageResult<CommentVO> commentVOPageResult = commentService.queryNewsCommentList(commentDTO);
         return Result.success(commentVOPageResult);
     }

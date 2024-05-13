@@ -56,6 +56,18 @@ public class CommentServiceImpl implements CommentService {
         if (result.isEmpty()) {
             throw new CommentException(CommentConstant.COMMENT_NOT_FOUND);
         }
+        // 获取子评论
+        result.forEach(commentVO -> {
+            CommentQueryDTO queryDTO = new CommentQueryDTO();
+            queryDTO.setNewsId(commentVO.getNewsId());
+            queryDTO.setParentId(commentVO.getCommentId());
+            List<CommentVO> childComments = commentMapper.queryNewsCommentList(queryDTO).getResult();
+            childComments.forEach(childComment -> {
+                Long authorId = childComment.getAuthorId();
+                childComment.setAuthorName(userService.queryUserById(authorId).getNickname());
+            });
+            commentVO.setChildren(childComments);
+        });
         return new PageResult<>(page, size, commentVOS.getTotal(), result);
     }
 

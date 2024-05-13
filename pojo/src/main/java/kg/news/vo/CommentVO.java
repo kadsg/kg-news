@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -53,4 +54,8 @@ public class CommentVO implements Serializable {
      * 评论时间
      */
     private LocalDateTime createTime;
+    /**
+     * 子评论列表
+     */
+    private List<CommentVO> children;
 }

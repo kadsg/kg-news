@@ -3,7 +3,11 @@
 <mapper namespace="kg.news.mapper.NewsTagMapper">
 
      <resultMap id="queryNewsTagMap" type="kg.news.entity.NewsTag">
-        <result column="tagId" property="id"/>
+         <result column="create_time" property="createTime"/>
+         <result column="update_time" property="updateTime"/>
+         <result column="create_user" property="createUser"/>
+         <result column="update_user" property="updateUser"/>
+         <result column="delete_flag" property="deleteFlag"/>
     </resultMap>
 
     <select id="queryNewsTag" parameterType="kg.news.dto.NewsTagQueryDTO" resultMap="queryNewsTagMap">

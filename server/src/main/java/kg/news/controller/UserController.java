@@ -44,6 +44,7 @@ public class UserController {
         User user = userService.queryUserById(id);
         UserVO userVO = UserVO.builder().build();
         BeanUtils.copyProperties(user, userVO);
+        userVO.setUserId(user.getId());
         return Result.success(userVO);
     }
 }

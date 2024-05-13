@@ -38,8 +38,10 @@ public class RoleServiceImpl implements RoleService {
         List<RoleVO> list = roles.stream().map(role -> RoleVO.builder()
                 .roleId(role.getId())
                 .roleName(role.getName())
+                .code(role.getCode())
                 .description(role.getDescription())
                 .createTime(role.getCreateTime())
+                .updateTime(role.getUpdateTime())
                 .build()).toList();
 
         return new PageResult<>(1, 10, list.size(), list);

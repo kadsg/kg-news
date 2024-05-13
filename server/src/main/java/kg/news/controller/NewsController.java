@@ -49,8 +49,8 @@ public class NewsController {
      * @param newsPageQueryDTO 查询条件
      * @return 新闻列表
      */
-    @GetMapping("")
-    public Result<PageResult<NewsSummaryVO>> queryNews(NewsPageQueryDTO newsPageQueryDTO) {
+    @PostMapping("/list")
+    public Result<PageResult<NewsSummaryVO>> queryNews(@RequestBody NewsPageQueryDTO newsPageQueryDTO) {
         PageResult<NewsSummaryVO> newsSummaryVOList = newsService.queryNews(newsPageQueryDTO);
         return Result.success(newsSummaryVOList);
     }

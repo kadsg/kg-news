@@ -140,6 +140,10 @@ public class NewsServiceImpl implements NewsService {
                 .content(news.getContent())
                 .mediaId(news.getCreateUser())
                 .mediaName(mediaName)
+                .viewCount(news.getViewCount())
+                .likeCount(news.getLikeCount())
+                .unlikeCount(news.getUnlikeCount())
+                .commentCount(news.getCommentCount())
                 .createTime(news.getCreateTime())
                 .build();
     }

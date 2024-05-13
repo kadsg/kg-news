@@ -21,6 +21,10 @@ public class RoleVO implements Serializable {
      */
     private String roleName;
     /**
+     * 角色编码
+     */
+    private String code;
+    /**
      * 角色描述
      */
     private String description;
@@ -28,4 +32,8 @@ public class RoleVO implements Serializable {
      * 创建时间
      */
     private LocalDateTime createTime;
+    /**
+     * 更新时间
+     */
+    private LocalDateTime updateTime;
 }
