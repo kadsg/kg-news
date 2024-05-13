@@ -1,5 +1,6 @@
 package kg.news.controller;
 
+import kg.news.dto.UserInfoDTO;
 import kg.news.dto.UserQueryDTO;
 import kg.news.entity.User;
 import kg.news.result.PageResult;
@@ -46,5 +47,11 @@ public class UserController {
         BeanUtils.copyProperties(user, userVO);
         userVO.setUserId(user.getId());
         return Result.success(userVO);
+    }
+
+    @PutMapping("/update")
+    public Result<Object> updateUser(@RequestBody UserInfoDTO userInfoDTO) {
+        userService.updateUser(userInfoDTO);
+        return Result.success();
     }
 }

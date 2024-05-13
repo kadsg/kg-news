@@ -1,5 +1,6 @@
 package kg.news.service;
 
+import kg.news.dto.UserInfoDTO;
 import kg.news.dto.UserQueryDTO;
 import kg.news.entity.User;
 import kg.news.result.PageResult;
@@ -27,4 +28,10 @@ public interface UserService {
      * @return 用户列表
      */
     List<User> queryAllUser();
+
+    /**
+     * 更新用户信息
+     * @param userInfoDTO 用户信息
+     */
+    void updateUser(UserInfoDTO userInfoDTO);
 }

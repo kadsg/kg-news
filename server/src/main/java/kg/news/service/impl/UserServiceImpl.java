@@ -2,21 +2,25 @@ package kg.news.service.impl;
 
 import kg.news.constant.RoleConstant;
 import kg.news.context.BaseContext;
+import kg.news.dto.UserInfoDTO;
 import kg.news.dto.UserQueryDTO;
 import kg.news.entity.Role;
 import kg.news.entity.RoleMapper;
 import kg.news.entity.User;
+import kg.news.enumration.OperationType;
 import kg.news.exception.RoleException;
 import kg.news.repository.RoleMapperRepository;
 import kg.news.repository.RoleRepository;
 import kg.news.repository.UserRepository;
 import kg.news.result.PageResult;
 import kg.news.service.UserService;
+import kg.news.utils.ServiceUtil;
 import kg.news.vo.UserVO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 @Service
@@ -111,5 +115,21 @@ public class UserServiceImpl implements UserService {
         List<RoleMapper> roleMapperList = roleMapperRepository.findRoleMappersByRoleId(3L);
         List<Long> userIds = roleMapperList.stream().map(RoleMapper::getUserId).toList();
         return userRepository.findAllByIdIn(userIds);
+    }
+
+    public void updateUser(UserInfoDTO userInfo) {
+        User user = userRepository.findById(userInfo.getId()).orElse(null);
+        if (user == null) {
+            return;
+        }
+        user.setNickname(userInfo.getNickname());
+        user.setEmail(userInfo.getEmail());
+        user.setPhone(userInfo.getPhone());
+        try {
+            ServiceUtil.autoFill(user, OperationType.UPDATE);
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+        userRepository.save(user);
     }
 }
