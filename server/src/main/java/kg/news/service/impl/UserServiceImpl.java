@@ -136,6 +136,8 @@ public class UserServiceImpl implements UserService {
         user.setNickname(userInfo.getNickname());
         user.setEmail(userInfo.getEmail());
         user.setPhone(userInfo.getPhone());
+        user.setAvatar(userInfo.getAvatar());
+        user.setDescription(userInfo.getDescription());
         try {
             ServiceUtil.autoFill(user, OperationType.UPDATE);
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
