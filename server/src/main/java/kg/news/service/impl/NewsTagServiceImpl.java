@@ -9,6 +9,7 @@ import kg.news.entity.NewsTag;
 import kg.news.enumration.OperationType;
 import kg.news.exception.NewsTagException;
 import kg.news.mapper.NewsTagMapper;
+import kg.news.repository.NewsRepository;
 import kg.news.repository.NewsTagRepository;
 import kg.news.result.PageResult;
 import kg.news.service.NewsTagService;
@@ -24,10 +25,12 @@ import java.util.List;
 public class NewsTagServiceImpl implements NewsTagService {
     private final NewsTagRepository newsTagRepository;
     private final NewsTagMapper newsTagMapper;
+    private final NewsRepository newsRepository;
 
-    public NewsTagServiceImpl(NewsTagRepository newsTagRepository, NewsTagMapper newsTagMapper) {
+    public NewsTagServiceImpl(NewsTagRepository newsTagRepository, NewsTagMapper newsTagMapper, NewsRepository newsRepository) {
         this.newsTagRepository = newsTagRepository;
         this.newsTagMapper = newsTagMapper;
+        this.newsRepository = newsRepository;
     }
 
     public void addNewsTag(NewsTagDTO newsTagDTO) {
@@ -50,6 +53,7 @@ public class NewsTagServiceImpl implements NewsTagService {
         Iterable<NewsTag> iterable = newsTagRepository.findAll();
         List<NewsTagVO> newsTagVOList = new ArrayList<>();
         iterable.forEach(tag -> {
+            long newsAmount = newsRepository.countByTagId(tag.getId());
             NewsTagVO newsTagVO = NewsTagVO.builder()
                     .tagId(tag.getId())
                     .tagName(tag.getName())
@@ -58,6 +62,7 @@ public class NewsTagServiceImpl implements NewsTagService {
                     .updateTime(tag.getUpdateTime())
                     .createUserId(tag.getCreateUser())
                     .updateUserId(tag.getUpdateUser())
+                    .count(newsAmount)
                     .deleteFlag(tag.getDeleteFlag())
                     .build();
             newsTagVOList.add(newsTagVO);
@@ -110,22 +115,27 @@ public class NewsTagServiceImpl implements NewsTagService {
         }
         PageHelper.startPage(pageNum, pageSize);
         Page<NewsTag> newsTagPage = newsTagMapper.queryNewsTag(newsTagQueryDTO);
-        List<NewsTagVO> newsTagVOList = newsTagPage.getResult().stream().map(tag -> NewsTagVO.builder()
-                .tagId(tag.getId())
-                .tagName(tag.getName())
-                .description(tag.getDescription())
-                .createTime(tag.getCreateTime())
-                .updateTime(tag.getUpdateTime())
-                .createUserId(tag.getCreateUser())
-                .updateUserId(tag.getUpdateUser())
-                .deleteFlag(tag.getDeleteFlag())
-                .build()).toList();
+        List<NewsTagVO> newsTagVOList = newsTagPage.getResult().stream().map(tag -> {
+            long newsAmount = newsRepository.countByTagId(tag.getId());
+            return NewsTagVO.builder()
+                    .tagId(tag.getId())
+                    .tagName(tag.getName())
+                    .description(tag.getDescription())
+                    .createTime(tag.getCreateTime())
+                    .updateTime(tag.getUpdateTime())
+                    .createUserId(tag.getCreateUser())
+                    .updateUserId(tag.getUpdateUser())
+                    .count(newsAmount)
+                    .deleteFlag(tag.getDeleteFlag())
+                    .build();
+        }).toList();
         return new PageResult<>(newsTagPage.getPageNum(), newsTagPage.getPageSize(), newsTagPage.getTotal(), newsTagVOList);
     }
 
     public NewsTagVO getNewsTag(Long tagId) {
         NewsTag newsTag = newsTagRepository.findById(tagId).orElse(null);
         if (newsTag != null) {
+            long newsAmount = newsRepository.countByTagId(newsTag.getId());
             return NewsTagVO.builder()
                     .tagId(newsTag.getId())
                     .tagName(newsTag.getName())
@@ -134,6 +144,7 @@ public class NewsTagServiceImpl implements NewsTagService {
                     .updateTime(newsTag.getUpdateTime())
                     .createUserId(newsTag.getCreateUser())
                     .updateUserId(newsTag.getUpdateUser())
+                    .count(newsAmount)
                     .deleteFlag(newsTag.getDeleteFlag())
                     .build();
         }

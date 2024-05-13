@@ -41,7 +41,11 @@ public class NewsTagVO implements Serializable {
      */
     private Long updateUserId;
     /**
-     * 创建用户名
+     * 新闻数量统计
+     */
+    private Long count;
+    /**
+     * 删除标记
      */
     private Boolean deleteFlag;
 }
