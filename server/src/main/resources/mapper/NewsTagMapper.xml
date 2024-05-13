@@ -19,7 +19,7 @@
                 </when>
                 <otherwise>
                     <if test="tagName != '' and tagName != null">
-                        AND name = #{tagName}
+                        AND name LIKE CONCAT('%', #{tagName}, '%')
                     </if>
                 </otherwise>
             </choose>
