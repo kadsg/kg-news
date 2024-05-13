@@ -9,15 +9,18 @@ import kg.news.service.NewsService;
 import kg.news.service.RecommendService;
 import kg.news.service.UserService;
 import kg.news.utils.KeyWordUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.xm.Similarity;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Component
+@Slf4j
 public class GenerateRecommendationTask {
     private static final int RECOMMENDATION_COUNT = 20; // 推荐文章数量
     private final UserService userService;
@@ -50,12 +53,14 @@ public class GenerateRecommendationTask {
      */
     @Scheduled(fixedRate = 1000 * 60 * 10)
     public void generateRecommendation() {
+        log.info("开始为所有用户生成推荐，开始时间{}", LocalDateTime.now());
         // 1. 获取所有用户（不包含媒体、管理员）
         List<User> userList = userService.queryAllUser();
         // 2. 遍历所有用户，获取它们的兴趣词
         List<News> newsList = newsService.getAllNews();
         // 3. 为用户生成推荐
         generateUserRecommendations(userList, newsList);
+        log.info("生成推荐结束，结束时间{}", LocalDateTime.now());
     }
 
     /**
@@ -72,6 +77,9 @@ public class GenerateRecommendationTask {
         userInterestMap.forEach((userId, userInterest) -> {
             // 计算每条新闻与该用户的匹配值（格式为新闻Id:匹配值）
             Map<Long, Double> matchValueMap = calculateMatchValue(userInterest, newsKeyWordMap);
+            if (matchValueMap.isEmpty()) {
+                return;
+            }
             // 获取匹配值最高的前N条新闻
             Map<Long, Double> topNMatchValueMap = getTopNRecommendations(matchValueMap);
             // 保存推荐结果
@@ -114,6 +122,9 @@ public class GenerateRecommendationTask {
      * @return 文章ID:匹配值
      */
     private Map<Long, Double> calculateMatchValue(String userInterest, Map<Long, String> newsKeyWordMap) {
+        if (userInterest == null || "".equals(userInterest)) {
+            return new HashMap<>();
+        }
         // 新闻Id:匹配值
         Map<Long, Double> matchValueMap = new HashMap<>();
         // 将当前用户兴趣词转换为Map（兴趣词：权重）
