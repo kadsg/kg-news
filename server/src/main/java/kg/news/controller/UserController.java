@@ -31,7 +31,7 @@ public class UserController {
      */
     @PostMapping("/list")
     public Result<PageResult<UserVO>> queryUser(@RequestBody UserQueryDTO userQueryDTO) {
-        PageResult<UserVO> userVOList = userService.queryUserByRoleId(userQueryDTO);
+        PageResult<UserVO> userVOList = userService.queryUser(userQueryDTO);
         return Result.success(userVOList);
     }
 

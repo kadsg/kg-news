@@ -12,6 +12,10 @@ import java.io.Serializable;
 @EqualsAndHashCode(callSuper = true)
 public class UserQueryDTO  extends PageRequestDTO implements Serializable {
     /**
+     * 用户id
+     */
+    private Long id;
+    /**
      * 角色id
      */
     private Long roleId;
@@ -19,4 +23,8 @@ public class UserQueryDTO  extends PageRequestDTO implements Serializable {
      * 用户名
      */
     private String username;
+    /**
+     * 昵称
+     */
+    private String nickname;
 }

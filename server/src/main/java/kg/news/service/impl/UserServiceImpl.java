@@ -1,5 +1,6 @@
 package kg.news.service.impl;
 
+import com.github.pagehelper.PageHelper;
 import kg.news.constant.RoleConstant;
 import kg.news.context.BaseContext;
 import kg.news.dto.UserInfoDTO;
@@ -9,6 +10,7 @@ import kg.news.entity.RoleMapper;
 import kg.news.entity.User;
 import kg.news.enumration.OperationType;
 import kg.news.exception.RoleException;
+import kg.news.mapper.UserMapper;
 import kg.news.repository.RoleMapperRepository;
 import kg.news.repository.RoleRepository;
 import kg.news.repository.UserRepository;
@@ -28,11 +30,13 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleMapperRepository roleMapperRepository;
     private final RoleRepository roleRepository;
+    private final UserMapper userMapper;
 
-    public UserServiceImpl(UserRepository userRepository, RoleMapperRepository roleMapperRepository, RoleRepository roleRepository) {
+    public UserServiceImpl(UserRepository userRepository, RoleMapperRepository roleMapperRepository, RoleRepository roleRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
         this.roleMapperRepository = roleMapperRepository;
         this.roleRepository = roleRepository;
+        this.userMapper = userMapper;
     }
 
     public User queryUserById(Long userId) {
@@ -41,6 +45,20 @@ public class UserServiceImpl implements UserService {
             userId = BaseContext.getCurrentId();
         }
         return userRepository.findById(userId).orElse(null);
+    }
+
+    public PageResult<UserVO> queryUser(UserQueryDTO userQueryDTO) {
+        List<UserVO> list;
+        int page = userQueryDTO.getPageNum();
+        int pageSize = userQueryDTO.getPageSize();
+        if (page <= 0 || pageSize <= 0) {
+            // 页码和每页大小必须大于0，未指定则默认为1和10
+            page = 1;
+            pageSize = 10;
+        }
+        PageHelper.startPage(page, pageSize);
+        Page<UserVO> users = userMapper.queryUsers(userQueryDTO);
+        return new PageResult<>(users.getNumber(), users.getSize(), users.getTotalElements(), users.getContent());
     }
 
     public PageResult<UserVO> queryUserByRoleId(UserQueryDTO userQueryDTO) {

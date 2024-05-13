@@ -21,7 +21,7 @@ public interface UserService {
      * @param userQueryDTO 用户查询条件
      * @return 用户列表
      */
-    PageResult<UserVO> queryUserByRoleId(UserQueryDTO userQueryDTO);
+    PageResult<UserVO> queryUser(UserQueryDTO userQueryDTO);
 
     /**
      * 查询所有普通用户（不包含媒体、管理员）
