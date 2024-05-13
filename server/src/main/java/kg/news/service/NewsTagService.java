@@ -19,7 +19,7 @@ public interface NewsTagService {
      * 获取所有新闻标签
      * @return 新闻标签列表
      */
-    List<NewsTagVO> getAllNewsTag();
+    PageResult<NewsTagVO> getAllNewsTag();
 
     /**
      * 删除新闻标签

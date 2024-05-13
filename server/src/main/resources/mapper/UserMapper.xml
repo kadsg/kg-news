@@ -15,26 +15,27 @@
         <result column="status" property="status"/>
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
+        <result column="create_time" property="createTime"/>
     </resultMap>
 
 
-    <select id="queryUsers" resultType="kg.news.vo.UserVO" resultMap="queryUserMapper">
-        SELECT * FROM user
-        inner join role_mapper
+    <select id="queryUsers" parameterType="kg.news.dto.UserQueryDTO" resultMap="queryUserMapper">
+        SELECT * FROM user as u
+        inner join role_mapper as r on u.id = r.user_id
         <where>
             <choose>
                 <when test="id != null and id != '0'">
-                    id = #{id}
+                    u.id = #{id}
                 </when>
                 <otherwise>
                     <if test="username != null and username != ''">
-                        AND username LIKE CONCAT('%', #{username}, '%')
+                        AND u.username LIKE CONCAT('%', #{username}, '%')
                     </if>
                     <if test="nickname != null and nickname != ''">
-                        AND nickname LIKE CONCAT('%', #{nickname}, '%')
+                        AND u.nickname LIKE CONCAT('%', #{nickname}, '%')
                     </if>
                     <if test="roleId != null and roleId != ''">
-                        AND roleId = #{roleId}
+                        AND r.role_id = #{roleId}
                     </if>
                 </otherwise>
             </choose>

@@ -28,8 +28,8 @@ public class NewsTagController {
      * @return 新闻标签列表
      */
     @GetMapping("/list")
-    public Result<List<NewsTagVO>> getAllNewsTag() {
-        List<NewsTagVO> newsTagVOList = newsTagService.getAllNewsTag();
+    public Result<PageResult<NewsTagVO>> getAllNewsTag() {
+        PageResult<NewsTagVO> newsTagVOList = newsTagService.getAllNewsTag();
         return Result.success(newsTagVOList);
     }
 

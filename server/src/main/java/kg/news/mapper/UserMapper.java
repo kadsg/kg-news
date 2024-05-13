@@ -1,10 +1,10 @@
 package kg.news.mapper;
 
+import com.github.pagehelper.Page;
 import kg.news.dto.UserQueryDTO;
-import kg.news.entity.User;
 import kg.news.vo.UserVO;
 import org.apache.ibatis.annotations.Mapper;
-import org.springframework.data.domain.Page;
+
 
 @Mapper
 public interface UserMapper {

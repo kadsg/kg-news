@@ -49,7 +49,7 @@ public class NewsTagServiceImpl implements NewsTagService {
         newsTagRepository.save(newsTag);
     }
 
-    public List<NewsTagVO> getAllNewsTag() {
+    public PageResult<NewsTagVO> getAllNewsTag() {
         Iterable<NewsTag> iterable = newsTagRepository.findAll();
         List<NewsTagVO> newsTagVOList = new ArrayList<>();
         iterable.forEach(tag -> {
@@ -67,7 +67,7 @@ public class NewsTagServiceImpl implements NewsTagService {
                     .build();
             newsTagVOList.add(newsTagVO);
         });
-        return newsTagVOList;
+        return new PageResult<>(1, newsTagVOList.size(), newsTagVOList.size(), newsTagVOList);
     }
 
     public void deleteNewsTag(List<Long> newsTagId) {
