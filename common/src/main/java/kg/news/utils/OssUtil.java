@@ -43,7 +43,8 @@ public class OssUtil {
             Response res = uploadManager.put(bytes, objectName, upToken);
             //解析上传成功的结果
             DefaultPutRet putRet = new Gson().fromJson(res.bodyString(), DefaultPutRet.class);
-            String path = ossProperties.getDomain() + putRet.key;
+            String path = ossProperties.getDomain() + '/' + putRet.key;
+            path = "http://" + path;
             log.info("文件上传到：{}", path);
             return path;
         } catch (QiniuException e) {
