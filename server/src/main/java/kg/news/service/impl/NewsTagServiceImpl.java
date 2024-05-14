@@ -5,6 +5,7 @@ import com.github.pagehelper.PageHelper;
 import kg.news.constant.NewsTagConstant;
 import kg.news.dto.NewsTagDTO;
 import kg.news.dto.NewsTagQueryDTO;
+import kg.news.entity.News;
 import kg.news.entity.NewsTag;
 import kg.news.enumration.OperationType;
 import kg.news.exception.NewsTagException;
@@ -149,5 +150,31 @@ public class NewsTagServiceImpl implements NewsTagService {
                     .build();
         }
         return null;
+    }
+
+    public List<NewsTagVO> getPublishedNewsTags(Long userId) {
+        List<News> newsList = newsRepository.findByCreateUser(userId);
+        if (newsList.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<Long> tagIdList = newsList.stream().map(News::getTagId).toList();
+        Iterable<NewsTag> newsTags = newsTagRepository.findAllById(tagIdList);
+        List<NewsTagVO> newsTagVOList = new ArrayList<>();
+        newsTags.forEach(tag -> {
+            long newsAmount = newsRepository.countByTagId(tag.getId());
+            NewsTagVO newsTagVO = NewsTagVO.builder()
+                    .tagId(tag.getId())
+                    .tagName(tag.getName())
+                    .description(tag.getDescription())
+                    .createTime(tag.getCreateTime())
+                    .updateTime(tag.getUpdateTime())
+                    .createUserId(tag.getCreateUser())
+                    .updateUserId(tag.getUpdateUser())
+                    .count(newsAmount)
+                    .deleteFlag(tag.getDeleteFlag())
+                    .build();
+            newsTagVOList.add(newsTagVO);
+        });
+        return newsTagVOList;
     }
 }

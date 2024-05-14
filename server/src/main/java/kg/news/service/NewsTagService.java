@@ -53,4 +53,11 @@ public interface NewsTagService {
      * @return 新闻标签
      */
     NewsTagVO getNewsTag(Long tagId);
+
+    /**
+     * 获取已发布的新闻标签
+     * @param userId 用户ID
+     * @return 新闻标签列表
+     */
+    List<NewsTagVO> getPublishedNewsTags(Long userId);
 }

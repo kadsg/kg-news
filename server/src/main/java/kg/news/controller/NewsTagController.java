@@ -87,4 +87,13 @@ public class NewsTagController {
         newsTagService.updateNewsTag(newsTagDTO);
         return Result.success();
     }
+
+    /**
+     * 获取某个用户所发新闻的所有标签
+     */
+    @GetMapping("/published/{userId}")
+    public Result<List<NewsTagVO>> getPublishedNewsTags(@PathVariable Long userId) {
+        List<NewsTagVO> newsTagVOList = newsTagService.getPublishedNewsTags(userId);
+        return Result.success(newsTagVOList);
+    }
 }
