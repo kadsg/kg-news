@@ -33,9 +33,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Service
 public class NewsServiceImpl implements NewsService {
+
+    private final ExecutorService executorService = Executors.newFixedThreadPool(10); // Change this number based on your needs
+
     private final NewsRepository newsRepository;
     private final NewsMapper newsMapper;
     private final UserService userService;
@@ -64,32 +69,34 @@ public class NewsServiceImpl implements NewsService {
             throw new RuntimeException(e);
         }
         News save = newsRepository.save(news);
-        // TODO: 以下步骤非常耗时，需要异步处理！！！
-        // 提取关键词
-        List<Keyword> keyWordList = KeyWordUtil.getKeyWordList(newsDTO.getTitle(), newsDTO.getContent(), 5);
-        // 构造关键词权重Map
-        Map<String, Double> keyWordMap = new HashMap<>();
-        keyWordList.forEach(keyword -> {
-            String key = keyword.getName();
-            Double weight = keyword.getScore();
-            keyWordMap.put(key, weight);
+
+        executorService.submit(() -> {
+            // 提取关键词
+            List<Keyword> keyWordList = KeyWordUtil.getKeyWordList(newsDTO.getTitle(), newsDTO.getContent(), 5);
+            // 构造关键词权重Map
+            Map<String, Double> keyWordMap = new HashMap<>();
+            keyWordList.forEach(keyword -> {
+                String key = keyword.getName();
+                Double weight = keyword.getScore();
+                keyWordMap.put(key, weight);
+            });
+            System.out.println("关键词权重Map：" + keyWordMap);
+            // 关键词权重Map示例：
+            // {乌方=138.15585324319431, 乌多=144.2370822012652, 大规模=55.26272908435627, 俄军=55.26262506735223, 设施=55.26206753491392}
+            // 将其转换为JSON字符串
+            try {
+                ObjectMapper objectMapper = new ObjectMapper();
+                String asString = objectMapper.writeValueAsString(keyWordMap);
+                NewsKeyWord newsKeyWord = NewsKeyWord.builder()
+                        .newsId(save.getId())
+                        .keyWord(asString)
+                        .build();
+                // 保存该关键词
+                newsKeyWordRepository.save(newsKeyWord);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         });
-        System.out.println("关键词权重Map：" + keyWordMap);
-        // 关键词权重Map示例：
-        // {乌方=138.15585324319431, 乌多=144.2370822012652, 大规模=55.26272908435627, 俄军=55.26262506735223, 设施=55.26206753491392}
-        // 将其转换为JSON字符串
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            String asString = objectMapper.writeValueAsString(keyWordMap);
-            NewsKeyWord newsKeyWord = NewsKeyWord.builder()
-                    .newsId(save.getId())
-                    .keyWord(asString)
-                    .build();
-            // 保存该关键词
-            newsKeyWordRepository.save(newsKeyWord);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public void delete(Long newsId) {
@@ -119,7 +126,8 @@ public class NewsServiceImpl implements NewsService {
         }
         PageHelper.startPage(page, pageSize);
         Page<NewsSummaryVO> newsList = newsMapper.queryNews(newsPageQueryDTO);
-        newsList.forEach(newsSummaryVO -> newsSummaryVO.setMediaName(userService.queryUserById(newsSummaryVO.getMediaId()).getNickname()));
+        newsList.forEach(newsSummaryVO ->
+                newsSummaryVO.setMediaName(userService.queryUserById(newsSummaryVO.getMediaId()).getNickname()));
         return new PageResult<>(page, pageSize, newsList.getTotal(), newsList.getResult());
     }
 

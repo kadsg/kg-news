@@ -27,7 +27,7 @@ public class NewsController {
      * @param newsDTO 帖子信息
      * @return 发布结果
      */
-    @PostMapping("")
+    @PostMapping("/post")
     public Result<Object> post(@RequestBody NewsDTO newsDTO) {
         newsService.post(newsDTO);
         return Result.success();
