@@ -9,6 +9,9 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * 评论视图对象
+ */
 @Data
 @Builder
 @AllArgsConstructor
@@ -50,6 +53,10 @@ public class CommentVO implements Serializable {
      * 点踩数
      */
     private int unlikeCount;
+    /**
+     * 是否删除
+     */
+    private Boolean deleteFlag;
     /**
      * 评论时间
      */

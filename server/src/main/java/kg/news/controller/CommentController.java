@@ -5,6 +5,7 @@ import kg.news.dto.CommentSaveDTO;
 import kg.news.result.PageResult;
 import kg.news.result.Result;
 import kg.news.service.CommentService;
+import kg.news.vo.CommentLikeStatusVO;
 import kg.news.vo.CommentVO;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,12 +47,18 @@ public class CommentController {
         return Result.success();
     }
 
+    @GetMapping("/like/status/{id}")
+    public Result<CommentLikeStatusVO> getCommentLikeStatus(@PathVariable("id") Long commentId) {
+        CommentLikeStatusVO commentLikeStatusVO = commentService.getCommentLikeStatus(commentId);
+        return Result.success(commentLikeStatusVO);
+    }
+
     /**
      * 点赞评论或取消
      *
      * @param commentId 评论ID
      */
-    @PutMapping("/favor/{id}")
+    @PutMapping("/like/{id}")
     public Result<Object> likeComment(@PathVariable("id") Long commentId) {
         commentService.likeComment(commentId);
         return Result.success();
@@ -73,7 +80,7 @@ public class CommentController {
      *
      * @param commentSaveDTO 评论保存DTO
      */
-    @PostMapping("/comment")
+    @PostMapping("/save")
     public Result<Object> comment(@RequestBody CommentSaveDTO commentSaveDTO) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         commentService.comment(commentSaveDTO);
         return Result.success();

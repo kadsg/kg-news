@@ -17,6 +17,7 @@ import kg.news.result.PageResult;
 import kg.news.service.CommentService;
 import kg.news.service.UserService;
 import kg.news.utils.ServiceUtil;
+import kg.news.vo.CommentLikeStatusVO;
 import kg.news.vo.CommentVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,14 +41,17 @@ public class CommentServiceImpl implements CommentService {
     }
 
     public PageResult<CommentVO> queryNewsCommentList(CommentQueryDTO commentDTO) {
-        int page = commentDTO.getPageNum();
-        int size = commentDTO.getPageSize();
-        if (page <= 0 || size <= 0) {
-            page = 1;
-            size = 10;
-        }
-        PageHelper.startPage(page, size);
+//        int page = commentDTO.getPageNum();
+//        int size = commentDTO.getPageSize();
+//        if (page <= 0 || size <= 0) {
+//            page = 1;
+//            size = 10;
+//        }
+//        PageHelper.startPage(page, size);
+        // TODO: 未实现分页
         Page<CommentVO> commentVOS = commentMapper.queryNewsCommentList(commentDTO);
+        // 将已删除的评论过滤掉
+        commentVOS.getResult().removeIf(CommentVO::getDeleteFlag);
         commentVOS.getResult().forEach(commentVO -> {
             Long authorId = commentVO.getAuthorId();
             commentVO.setAuthorName(userService.queryUserById(authorId).getNickname());
@@ -62,13 +66,15 @@ public class CommentServiceImpl implements CommentService {
             queryDTO.setNewsId(commentVO.getNewsId());
             queryDTO.setParentId(commentVO.getCommentId());
             List<CommentVO> childComments = commentMapper.queryNewsCommentList(queryDTO).getResult();
+            // 将已删除的评论过滤掉
+            childComments.removeIf(CommentVO::getDeleteFlag);
             childComments.forEach(childComment -> {
                 Long authorId = childComment.getAuthorId();
                 childComment.setAuthorName(userService.queryUserById(authorId).getNickname());
             });
             commentVO.setChildren(childComments);
         });
-        return new PageResult<>(page, size, commentVOS.getTotal(), result);
+        return new PageResult<>(1, result.size(), result.size(), result);
     }
 
     public void deleteComment(Long commentId) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
@@ -88,7 +94,7 @@ public class CommentServiceImpl implements CommentService {
     public void likeComment(Long commentId) {
         Comment comment = commentRepository.findById(commentId).orElse(null);
         Long userId = BaseContext.getCurrentId();
-        CommentLike commentLike = likeRepository.findById(commentId).orElse(null);
+        CommentLike commentLike = likeRepository.findByCommentIdAndUserId(commentId, userId);
         if (comment == null || comment.getDeleteFlag()) {
             throw new CommentException(CommentConstant.COMMENT_NOT_FOUND);
         }
@@ -123,7 +129,7 @@ public class CommentServiceImpl implements CommentService {
     public void dislikeComment(Long commentId) {
         Comment comment = commentRepository.findById(commentId).orElse(null);
         Long userId = BaseContext.getCurrentId();
-        CommentLike commentLike = likeRepository.findById(commentId).orElse(null);
+        CommentLike commentLike = likeRepository.findByCommentIdAndUserId(commentId, userId);
         if (comment == null || comment.getDeleteFlag()) {
             throw new CommentException(CommentConstant.COMMENT_NOT_FOUND);
         }

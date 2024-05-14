@@ -3,6 +3,7 @@ package kg.news.service;
 import kg.news.dto.CommentQueryDTO;
 import kg.news.dto.CommentSaveDTO;
 import kg.news.result.PageResult;
+import kg.news.vo.CommentLikeStatusVO;
 import kg.news.vo.CommentVO;
 
 import java.lang.reflect.InvocationTargetException;
@@ -43,4 +44,12 @@ public interface CommentService {
      * @param commentId 评论ID
      */
     void dislikeComment(Long commentId);
+
+    /**
+     * 获取评论点赞状态
+     *
+     * @param commentId 评论ID
+     * @return 评论点赞状态
+     */
+    CommentLikeStatusVO getCommentLikeStatus(Long commentId);
 }

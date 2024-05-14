@@ -11,6 +11,7 @@
         <result column="parent_id" property="fatherId"/>
         <result column="reply_id" property="replyId"/>
         <result column="create_time" property="createTime"/>
+        <result column="delete_flag" property="deleteFlag"/>
     </resultMap>
 
     <select id="queryNewsCommentList" parameterType="kg.news.dto.CommentQueryDTO" resultMap="queryCommentMap">
