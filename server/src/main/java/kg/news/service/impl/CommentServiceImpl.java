@@ -1,7 +1,6 @@
 package kg.news.service.impl;
 
 import com.github.pagehelper.Page;
-import com.github.pagehelper.PageHelper;
 import kg.news.constant.CommentConstant;
 import kg.news.context.BaseContext;
 import kg.news.dto.CommentQueryDTO;
@@ -158,6 +157,25 @@ public class CommentServiceImpl implements CommentService {
         }
         likeRepository.save(commentLike);
         commentRepository.save(comment);
+    }
+
+    public CommentLikeStatusVO getCommentLikeStatus(Long commentId) {
+        Long userId = BaseContext.getCurrentId();
+        CommentLike commentLike = likeRepository.findByCommentIdAndUserId(commentId, userId);
+        if (commentLike == null) {
+            return CommentLikeStatusVO.builder()
+                    .userId(userId)
+                    .commentId(commentId)
+                    .likeStatus(false)
+                    .dislikeStatus(false)
+                    .build();
+        }
+        return CommentLikeStatusVO.builder()
+                .userId(userId)
+                .commentId(commentId)
+                .likeStatus(commentLike.isLikeFlag())
+                .dislikeStatus(commentLike.isDislikeFlag())
+                .build();
     }
 
     public void comment(CommentSaveDTO commentSaveDTO) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
