@@ -1,10 +1,12 @@
 package kg.news.service.impl;
 
+import com.github.pagehelper.PageHelper;
 import kg.news.context.BaseContext;
 import kg.news.dto.FansQueryDTO;
 import kg.news.dto.FollowQueryDTO;
 import kg.news.entity.Follow;
 import kg.news.entity.UserFollowStatus;
+import kg.news.mapper.FollowMapper;
 import kg.news.repository.FollowRepository;
 import kg.news.repository.UserFollowStatusRepository;
 import kg.news.result.PageResult;
@@ -24,12 +26,14 @@ public class FollowServiceImpl implements FollowService {
     private final FollowRepository followRepository;
     private final UserService userService;
     private final UserFollowStatusRepository userFollowStatusRepository;
+    private final FollowMapper followMapper;
 
     public FollowServiceImpl(FollowRepository followRepository, UserService userService,
-                             UserFollowStatusRepository userFollowStatusRepository) {
+                             UserFollowStatusRepository userFollowStatusRepository, FollowMapper followMapper) {
         this.followRepository = followRepository;
         this.userService = userService;
         this.userFollowStatusRepository = userFollowStatusRepository;
+        this.followMapper = followMapper;
     }
 
     @Transactional
@@ -97,6 +101,7 @@ public class FollowServiceImpl implements FollowService {
         int page = fansQueryDTO.getPageNum();
         int pageSize = fansQueryDTO.getPageSize();
         Long userId = fansQueryDTO.getUserId();
+
         // 如果page或pageSize非法，则设置默认值
         if (page <= 0 || pageSize <= 0) {
             page = 1;
@@ -105,19 +110,11 @@ public class FollowServiceImpl implements FollowService {
         // 如果userId为空，则取当前用户ID
         if (userId == null) {
             userId = BaseContext.getCurrentId();
+            fansQueryDTO.setUserId(userId);
         }
         // 查询关注列表
-        PageRequest pageRequest = PageRequest.of(page - 1, pageSize);
-        Page<Follow> followPage = followRepository.findAllByFollowUserId(userId, pageRequest);
-        List<Follow> followList = followPage.getContent();
-        List<FansVO> fansVOList = followList
-                .stream()
-                .map(follow ->
-                        FansVO.builder()
-                                .fansId(follow.getUserId())
-                                .fansName(userService.queryUserById(follow.getUserId()).getNickname())
-                                .build())
-                .toList();
-        return new PageResult<>(page, pageSize, followPage.getTotalElements(), fansVOList);
+        PageHelper.startPage(page, pageSize);
+        com.github.pagehelper.Page<FansVO> followPage = followMapper.queryFansList(fansQueryDTO);
+        return new PageResult<>(followPage.getPageNum(), followPage.getPageSize(), followPage.getTotal(), followPage.getResult());
     }
 }

@@ -5,10 +5,7 @@ import kg.news.result.PageResult;
 import kg.news.result.Result;
 import kg.news.service.FollowService;
 import kg.news.vo.FansVO;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 粉丝管理
@@ -28,8 +25,8 @@ public class FansController {
      * @param fansQueryDTO 查询条件
      * @return 粉丝列表
      */
-    @GetMapping("/list")
-    public Result<PageResult<FansVO>> queryFansList(FansQueryDTO fansQueryDTO) {
+    @PostMapping("/list")
+    public Result<PageResult<FansVO>> queryFansList(@RequestBody FansQueryDTO fansQueryDTO) {
         PageResult<FansVO> pageResult = followService.queryFansList(fansQueryDTO);
         return Result.success(pageResult);
     }
