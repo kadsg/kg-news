@@ -81,6 +81,7 @@ public class CommentServiceImpl implements CommentService {
         return new PageResult<>(1, result.size(), result.size(), result);
     }
 
+    @Transactional
     public void deleteComment(Long commentId) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         Comment comment = commentRepository.findById(commentId).orElse(null);
         if (comment == null || comment.getDeleteFlag()) {
@@ -190,11 +191,17 @@ public class CommentServiceImpl implements CommentService {
                 .build();
     }
 
+    @Transactional
     public void comment(CommentSaveDTO commentSaveDTO) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        News news = newsRepository.findById(commentSaveDTO.getNewsId()).orElse(null);
-        if (news != null && news.getDeleteFlag()) {
+        newsRepository.findById(commentSaveDTO.getNewsId()).ifPresent(news -> {
             news.setCommentCount(news.getCommentCount() + 1);
-        }
+            try {
+                ServiceUtil.autoFill(news, OperationType.UPDATE);
+            } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+            newsRepository.save(news);
+        });
         Comment comment = Comment.builder()
                 .newsId(commentSaveDTO.getNewsId())
                 .parentId(commentSaveDTO.getParentId())
