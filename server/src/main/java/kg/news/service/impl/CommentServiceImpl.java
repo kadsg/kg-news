@@ -7,11 +7,13 @@ import kg.news.dto.CommentQueryDTO;
 import kg.news.dto.CommentSaveDTO;
 import kg.news.entity.Comment;
 import kg.news.entity.CommentLike;
+import kg.news.entity.News;
 import kg.news.enumration.OperationType;
 import kg.news.exception.CommentException;
 import kg.news.mapper.CommentMapper;
 import kg.news.repository.CommentRepository;
 import kg.news.repository.LikeRepository;
+import kg.news.repository.NewsRepository;
 import kg.news.result.PageResult;
 import kg.news.service.CommentService;
 import kg.news.service.UserService;
@@ -23,7 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 public class CommentServiceImpl implements CommentService {
@@ -31,12 +32,15 @@ public class CommentServiceImpl implements CommentService {
     private final LikeRepository likeRepository;
     private final CommentMapper commentMapper;
     private final UserService userService;
+    private final NewsRepository newsRepository;
 
-    public CommentServiceImpl(CommentRepository commentRepository, LikeRepository likeRepository, CommentMapper commentMapper, UserService userService) {
+    public CommentServiceImpl(CommentRepository commentRepository, LikeRepository likeRepository, CommentMapper commentMapper, UserService userService,
+                              NewsRepository newsRepository) {
         this.commentRepository = commentRepository;
         this.likeRepository = likeRepository;
         this.commentMapper = commentMapper;
         this.userService = userService;
+        this.newsRepository = newsRepository;
     }
 
     public PageResult<CommentVO> queryNewsCommentList(CommentQueryDTO commentDTO) {
@@ -57,7 +61,8 @@ public class CommentServiceImpl implements CommentService {
         });
         List<CommentVO> result = commentVOS.getResult();
         if (result.isEmpty()) {
-            throw new CommentException(CommentConstant.COMMENT_NOT_FOUND);
+//            throw new CommentException(CommentConstant.COMMENT_NOT_FOUND);
+            return new PageResult<>(1, 0, 0, result);
         }
         // 获取子评论
         result.forEach(commentVO -> {
@@ -81,12 +86,19 @@ public class CommentServiceImpl implements CommentService {
         if (comment == null || comment.getDeleteFlag()) {
             throw new CommentException(CommentConstant.COMMENT_NOT_FOUND);
         }
-        if (!Objects.equals(comment.getCreateUser(), BaseContext.getCurrentId())) {
-            throw new CommentException(CommentConstant.NOT_COMMENT_MANAGER);
-        }
+//        if (!Objects.equals(comment.getCreateUser(), BaseContext.getCurrentId())) {
+//            throw new CommentException(CommentConstant.NOT_COMMENT_MANAGER);
+//        }
         comment.setDeleteFlag(true);
         ServiceUtil.autoFill(comment, OperationType.UPDATE);
         commentRepository.save(comment);
+        Long newsId = comment.getNewsId();
+        News news = newsRepository.findById(newsId).orElse(null);
+        if (news != null) {
+            news.setCommentCount(news.getCommentCount() - 1);
+            ServiceUtil.autoFill(news, OperationType.UPDATE);
+            newsRepository.save(news);
+        }
     }
 
     @Transactional
@@ -179,6 +191,10 @@ public class CommentServiceImpl implements CommentService {
     }
 
     public void comment(CommentSaveDTO commentSaveDTO) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        News news = newsRepository.findById(commentSaveDTO.getNewsId()).orElse(null);
+        if (news != null && news.getDeleteFlag()) {
+            news.setCommentCount(news.getCommentCount() + 1);
+        }
         Comment comment = Comment.builder()
                 .newsId(commentSaveDTO.getNewsId())
                 .parentId(commentSaveDTO.getParentId())

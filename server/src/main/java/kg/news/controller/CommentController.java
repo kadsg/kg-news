@@ -47,6 +47,11 @@ public class CommentController {
         return Result.success();
     }
 
+    /**
+     * 获取评论点赞状态
+     * @param commentId 评论ID
+     * @return 评论点赞状态
+     */
     @GetMapping("/like/status/{id}")
     public Result<CommentLikeStatusVO> getCommentLikeStatus(@PathVariable("id") Long commentId) {
         CommentLikeStatusVO commentLikeStatusVO = commentService.getCommentLikeStatus(commentId);
