@@ -1,14 +1,19 @@
 package kg.news.utils;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
+import lombok.extern.slf4j.Slf4j;
 import org.ansj.app.keyword.KeyWordComputer;
 import org.ansj.app.keyword.Keyword;
 import org.springframework.stereotype.Component;
 import org.xm.Similarity;
 
+import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
+@Slf4j
 public class KeyWordUtil {
     public enum UPDATE_TYPE {
         INCREASE, DECREASE
@@ -47,9 +52,17 @@ public class KeyWordUtil {
             return srcKeyWordJson;
         }
         // 将目标关键词Json字符串转换为Map
-        Map<String, Double> targetKeyWordMap = JSON.parseObject(targetKeyWordJson, Map.class);
+//        Map<String, Double> targetKeyWordMap = JSON.parseObject(targetKeyWordJson, Map.class);
+        Map<String, Double> targetKeyWordMap = JSON.parseObject(targetKeyWordJson, new TypeReference<Map<String, BigDecimal>>() {})
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().doubleValue()));
         // 将源关键词Json字符串转换为Map
-        Map<String, Double> srcKeyWordMap = JSON.parseObject(srcKeyWordJson, Map.class);
+//        Map<String, Double> srcKeyWordMap = JSON.parseObject(srcKeyWordJson, Map.class);
+        Map<String, Double> srcKeyWordMap = JSON.parseObject(srcKeyWordJson, new TypeReference<Map<String, BigDecimal>>() {})
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().doubleValue()));
         // 如果目标兴趣词表不为空，需要将源关键词表与目标关键词表进行合并
         // 合并过程如下：
         // 1. 遍历源关键词表，如果目标词表中没有该关键词
