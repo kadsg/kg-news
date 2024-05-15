@@ -35,9 +35,22 @@ public class NewsTagServiceImpl implements NewsTagService {
     }
 
     public void addNewsTag(NewsTagDTO newsTagDTO) {
-        if (newsTagRepository.findByName(newsTagDTO.getName()) != null) {
-            throw new NewsTagException(NewsTagConstant.TAG_EXIST);
+        NewsTag byName = newsTagRepository.findByName(newsTagDTO.getName());
+        if (byName != null) {
+            if (!byName.getDeleteFlag()) {
+                throw new NewsTagException(NewsTagConstant.TAG_EXIST);
+            }
+            // 覆盖前标签
+            byName.setDeleteFlag(false);
+            try {
+                ServiceUtil.autoFill(byName, OperationType.UPDATE);
+            } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+            newsTagRepository.save(byName);
+            return;
         }
+        // 新建标签
         NewsTag newsTag = NewsTag.builder()
                 .name(newsTagDTO.getName())
                 .description(newsTagDTO.getDescription())

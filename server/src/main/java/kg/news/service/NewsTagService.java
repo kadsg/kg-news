@@ -23,9 +23,9 @@ public interface NewsTagService {
 
     /**
      * 删除新闻标签
-     * @param newsTagId 新闻标签ID
+     * @param id 新闻标签ID
      */
-    void deleteNewsTag(List<Long> newsTagId);
+    void deleteNewsTag(Long id);
 
     /**
      * 修改新闻标签
