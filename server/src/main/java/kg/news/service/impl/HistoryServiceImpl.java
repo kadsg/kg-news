@@ -23,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Service
 public class HistoryServiceImpl implements HistoryService {
@@ -32,6 +34,8 @@ public class HistoryServiceImpl implements HistoryService {
     private final NewsTagService newsTagService;
     private final UserInterestRepository userInterestRepository;
     private final NewsKeyWordRepository newsKeyWordRepository;
+    // 定义线程池
+    private final ExecutorService executorService = Executors.newFixedThreadPool(10);
 
     public HistoryServiceImpl(HistoryRepository historyRepository, NewsService newsService, UserService userService, NewsTagService newsTagService, UserInterestRepository userInterestRepository, NewsKeyWordRepository newsKeyWordRepository) {
         this.historyRepository = historyRepository;
@@ -106,23 +110,24 @@ public class HistoryServiceImpl implements HistoryService {
             history.setUserId(userId);
             historyRepository.save(history);
 
-            // TODO: 此处开始异步
-            // 更新新闻浏览次数
-            News news = newsService.queryNews(newsId);
-            news.setViewCount(news.getViewCount() + 1);
-            newsService.update(news);
+            executorService.submit(() -> {
+                // 更新新闻浏览次数
+                News news = newsService.queryNews(newsId);
+                news.setViewCount(news.getViewCount() + 1);
+                newsService.update(news);
 
-            // 更新用户兴趣词表
-            UserInterest interest = userInterestRepository.findByUserId(userId);
-            String userInterestJson = interest.getInterest();
-            String newsKeywordsJson = newsKeyWordRepository.findByNewsId(newsId).getKeyWord();
+                // 更新用户兴趣词表
+                UserInterest interest = userInterestRepository.findByUserId(userId);
+                String userInterestJson = interest.getInterest();
+                String newsKeywordsJson = newsKeyWordRepository.findByNewsId(newsId).getKeyWord();
 
-            double threshold = 0.7; // 相似度阈值
-            double convertValue = 0.7; // 权重转换值
+                double threshold = 0.7; // 相似度阈值
+                double convertValue = 0.7; // 权重转换值
 
-            String newInterestJson = KeyWordUtil.updateKeyWord(userInterestJson, newsKeywordsJson, KeyWordUtil.UPDATE_TYPE.INCREASE, threshold, convertValue);
-            interest.setInterest(newInterestJson);
-            userInterestRepository.save(interest);
+                String newInterestJson = KeyWordUtil.updateKeyWord(userInterestJson, newsKeywordsJson, KeyWordUtil.UPDATE_TYPE.INCREASE, threshold, convertValue);
+                interest.setInterest(newInterestJson);
+                userInterestRepository.save(interest);
+            });
         }
     }
 }

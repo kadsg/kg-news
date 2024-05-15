@@ -12,6 +12,10 @@ public class HistorySaveDTO implements Serializable {
     /**
      * 用户id
      */
+    private Long userId;
+    /**
+     * 媒体id
+     */
     private Long mediaId;
     /**
      * 媒体名称
