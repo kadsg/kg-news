@@ -36,8 +36,8 @@ public class FollowController {
      * @param followQueryDTO 查询条件
      * @return 关注列表
      */
-    @GetMapping("/list")
-    public Result<PageResult<FollowVO>> queryFollowList(FollowQueryDTO followQueryDTO) {
+    @PostMapping("/list")
+    public Result<PageResult<FollowVO>> queryFollowList(@RequestBody FollowQueryDTO followQueryDTO) {
         PageResult<FollowVO> pageResult = followService.queryFollowList(followQueryDTO);
         return Result.success(pageResult);
     }

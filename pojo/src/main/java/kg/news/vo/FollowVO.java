@@ -19,9 +19,29 @@ public class FollowVO implements Serializable {
     /**
      * 被关注者ID
      */
-    private Long followId;
+    private Long id;
     /**
      * 被关注者昵称
      */
-    private String followName;
+    private String nickname;
+    /**
+     * 头像
+     */
+    private String avatar;
+    /**
+     * 描述
+     */
+    private String description;
+    /**
+     * 手机号
+     */
+    private String phone;
+    /**
+     * 邮箱
+     */
+    private String email;
+    /**
+     * 删除标记
+     */
+    private Boolean deleteFlag;
 }

@@ -16,4 +16,12 @@ public class FollowQueryDTO  extends PageRequestDTO implements Serializable {
      * 用户ID
      */
     private Long userId;
+    /**
+     * 被关注的账号ID
+     */
+    private Long followId;
+    /**
+     * 被关注人的昵称
+     */
+    private String nickname;
 }
