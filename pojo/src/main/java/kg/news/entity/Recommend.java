@@ -37,7 +37,7 @@ public class Recommend implements Serializable {
     /**
      * 是否已读
      */
-    @Column(nullable = false, insertable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    @Column(nullable = false, insertable = false, columnDefinition = "TINYINT(1) DEFAULT 0")
     private Boolean readFlag;
     /**
      * 生成时间

@@ -101,9 +101,25 @@ public class NewsController {
         return Result.success(newsLikeStatusVO);
     }
 
+    /**
+     * 获取收藏新闻
+     * @param favoriteQueryDTO 查询条件
+     * @return 新闻列表
+     */
     @PostMapping("/favorite")
     public Result<PageResult<NewsSummaryVO>> getFavoriteNews(@RequestBody FavoriteQueryDTO favoriteQueryDTO) {
         PageResult<NewsSummaryVO> newsSummaryVOList = newsService.getFavoriteNews(favoriteQueryDTO);
+        return Result.success(newsSummaryVOList);
+    }
+
+    /**
+     * 获取推荐新闻
+     * @param userId 用户ID
+     * @return 新闻列表
+     */
+    @GetMapping("/recommend/{id}")
+    public Result<PageResult<NewsSummaryVO>> getRecommendNews(@PathVariable("id") Long userId) {
+        PageResult<NewsSummaryVO> newsSummaryVOList = newsService.getRecommendNews(userId);
         return Result.success(newsSummaryVOList);
     }
 }

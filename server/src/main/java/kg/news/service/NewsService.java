@@ -106,4 +106,11 @@ public interface NewsService {
      * @return 新闻列表
      */
     PageResult<NewsSummaryVO> getFavoriteNews(FavoriteQueryDTO favoriteQueryDTO);
+
+    /**
+     * 获取推荐新闻
+     * @param userId 用户ID
+     * @return 新闻列表
+     */
+    PageResult<NewsSummaryVO> getRecommendNews(Long userId);
 }

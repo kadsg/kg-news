@@ -16,6 +16,7 @@ import kg.news.mapper.NewsMapper;
 import kg.news.repository.*;
 import kg.news.result.PageResult;
 import kg.news.service.NewsService;
+import kg.news.service.RecommendService;
 import kg.news.service.UserService;
 import kg.news.utils.KeyWordUtil;
 import kg.news.utils.ServiceUtil;
@@ -55,9 +56,10 @@ public class NewsServiceImpl implements NewsService {
     private final NewsTagRepository newsTagRepository;
     private final UserInterestRepository userInterestRepository;
     private final FavoriteMapper favoriteMapper;
+    private final RecommendService recommendService;
 
     public NewsServiceImpl(NewsRepository newsRepository, NewsMapper newsMapper, UserService userService, FavoriteRepository favoriteRepository, NewsKeyWordRepository newsKeyWordRepository, HistoryRepository historyRepository, RoleMapperRepository roleMapperRepository,
-                           NewsTagRepository newsTagRepository, UserInterestRepository userInterestRepository, FavoriteMapper favoriteMapper) {
+                           NewsTagRepository newsTagRepository, UserInterestRepository userInterestRepository, FavoriteMapper favoriteMapper, RecommendService recommendService) {
         this.newsRepository = newsRepository;
         this.newsMapper = newsMapper;
         this.userService = userService;
@@ -68,6 +70,7 @@ public class NewsServiceImpl implements NewsService {
         this.newsTagRepository = newsTagRepository;
         this.userInterestRepository = userInterestRepository;
         this.favoriteMapper = favoriteMapper;
+        this.recommendService = recommendService;
     }
 
     @Transactional
@@ -132,6 +135,10 @@ public class NewsServiceImpl implements NewsService {
     }
 
     public PageResult<NewsSummaryVO> queryNews(NewsPageQueryDTO newsPageQueryDTO) {
+        if (newsPageQueryDTO.getNewsTagId() == null || newsPageQueryDTO.getNewsTagId() == 0) {
+            return getRecommendNews(BaseContext.getCurrentId());
+        }
+
         int page = newsPageQueryDTO.getPageNum();
         int pageSize = newsPageQueryDTO.getPageSize();
         if (page <= 0 || pageSize <= 0) {
@@ -157,6 +164,7 @@ public class NewsServiceImpl implements NewsService {
         if (news == null || news.getDeleteFlag()) {
             throw new NewsException(NewsConstant.NEWS_NOT_FOUND);
         }
+        recommendService.removeRecommend(BaseContext.getCurrentId(), newsId);
         String mediaName = userService.queryUserById(news.getCreateUser()).getNickname();
         NewsDetailVO newsDetailVO = NewsDetailVO.builder()
                 .id(news.getId())
@@ -338,6 +346,11 @@ public class NewsServiceImpl implements NewsService {
         PageHelper.startPage(pageNum, pageSize);
         Page<NewsSummaryVO> newsPage = favoriteMapper.queryFavoriteNews(favoriteQueryDTO);
         return new PageResult<>(newsPage.getPageNum(), newsPage.getPageSize(), newsPage.getTotal(), newsPage.getResult());
+    }
+
+    public PageResult<NewsSummaryVO> getRecommendNews(Long userId) {
+        List<NewsSummaryVO> newsList = recommendService.getRecommendationByUserId(userId);
+        return new PageResult<>(1, 1000, newsList.size(), newsList);
     }
 
     /**

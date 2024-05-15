@@ -74,6 +74,6 @@ public class Comment implements Serializable {
     /**
      * 删除标记
      */
-    @Column(nullable = false, insertable = false)
+    @Column(nullable = false, insertable = false, columnDefinition = "BIT DEFAULT 0")
     private Boolean deleteFlag;
 }

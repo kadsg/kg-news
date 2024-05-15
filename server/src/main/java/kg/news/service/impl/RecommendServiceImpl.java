@@ -42,12 +42,20 @@ public class RecommendServiceImpl implements RecommendService {
         return recommends.stream()
                 .map(recommend -> {
                     News news = newsRepository.findById(recommend.getNewsId()).orElse(null);
-                    if (news == null) {
+                    if (news == null || news.getDeleteFlag()) {
                         return null;
                     }
                     NewsSummaryVO newsSummaryVO = new NewsSummaryVO();
                     BeanUtils.copyProperties(news, newsSummaryVO);
                     return newsSummaryVO;
                 }).toList();
+    }
+
+    public void removeRecommend(Long userId, Long newsId) {
+        Recommend recommend = recommendRepository.findByUserIdAndNewsId(userId, newsId);
+        if (recommend != null) {
+            recommend.setReadFlag(true);
+            recommendRepository.save(recommend);
+        }
     }
 }

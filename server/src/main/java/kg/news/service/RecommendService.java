@@ -22,4 +22,12 @@ public interface RecommendService {
      * @return 推荐的新闻列表
      */
     List<NewsSummaryVO> getRecommendationByUserId(Long userId);
+
+    /**
+     * 删除用户的新闻推荐结果
+     *
+     * @param userId 用户ID
+     * @param newsId 新闻ID
+     */
+    void removeRecommend(Long userId, Long newsId);
 }
