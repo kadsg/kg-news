@@ -38,7 +38,8 @@ public class News implements Serializable {
     /**
      * 内容
      */
-    @Column(columnDefinition = "LONGTEXT")
+    @Lob
+    @Column(columnDefinition = "longtext")
     private String content;
     /**
      * 封面

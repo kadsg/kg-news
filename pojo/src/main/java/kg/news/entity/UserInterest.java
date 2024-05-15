@@ -34,6 +34,7 @@ public class UserInterest implements Serializable {
     /**
      * 兴趣关键词及权重，json格式
      */
-    @Column(columnDefinition = "LONGTEXT")
+    @Lob
+    @Column(columnDefinition = "longtext")
     private String interest;
 }
