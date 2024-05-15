@@ -1,6 +1,7 @@
 package kg.news.task;
 
-import com.alibaba.fastjson2.JSONObject;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import kg.news.entity.News;
 import kg.news.entity.User;
 import kg.news.repository.NewsKeyWordRepository;
@@ -14,10 +15,12 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.xm.Similarity;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -128,13 +131,21 @@ public class GenerateRecommendationTask {
         // 新闻Id:匹配值
         Map<Long, Double> matchValueMap = new HashMap<>();
         // 将当前用户兴趣词转换为Map（兴趣词：权重）
-        Map<String, Double> currentUserInterestMap = JSONObject.parseObject(userInterest, Map.class);
+//        Map<String, Double> currentUserInterestMap = JSONObject.parseObject(userInterest, Map.class);
+        Map<String, Double> currentUserInterestMap = JSON.parseObject(userInterest, new TypeReference<Map<String, BigDecimal>>() {})
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().doubleValue()));
         // 将用户兴趣词与文章所有关键词进行逐个比较
         for (Map.Entry<Long, String> entry : newsKeyWordMap.entrySet()) {
             Long newsId = entry.getKey();
             // 将当前文章关键词转换为Map（关键词：权重）
             String newsKeyWord = entry.getValue();
-            Map<String, Double> currentNewsKeyWordMap = JSONObject.parseObject(newsKeyWord, Map.class);
+//            Map<String, Double> currentNewsKeyWordMap = JSONObject.parseObject(newsKeyWord, Map.class);
+            Map<String, Double> currentNewsKeyWordMap = JSON.parseObject(newsKeyWord, new TypeReference<Map<String, BigDecimal>>() {})
+                    .entrySet()
+                    .stream()
+                    .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().doubleValue()));
             double matchValue = 0;
             // 计算用户兴趣词与文章关键词的匹配度
             for (Map.Entry<String, Double> userInterestEntry : currentUserInterestMap.entrySet()) {

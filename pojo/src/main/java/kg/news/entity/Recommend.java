@@ -28,7 +28,6 @@ public class Recommend implements Serializable {
     /**
      * 用户ID
      */
-    @Column(nullable = false, unique = true)
     private Long userId;
     /**
      * 新闻ID
@@ -38,7 +37,7 @@ public class Recommend implements Serializable {
     /**
      * 是否已读
      */
-    @Column(nullable = false, insertable = false)
+    @Column(nullable = false, insertable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private Boolean readFlag;
     /**
      * 生成时间
