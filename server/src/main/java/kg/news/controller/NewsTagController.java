@@ -68,12 +68,12 @@ public class NewsTagController {
 
     /**
      * 删除新闻标签
-     * @param newsTagId 新闻标签ID
+     * @param id 新闻标签ID
      * @return 删除结果
      */
-    @DeleteMapping
-    public Result<Object> deleteNewsTag(@RequestParam List<Long> newsTagId) {
-        newsTagService.deleteNewsTag(newsTagId);
+    @DeleteMapping("/{id}")
+    public Result<Object> deleteNewsTag(@PathVariable Long id) {
+        newsTagService.deleteNewsTag(id);
         return Result.success();
     }
 

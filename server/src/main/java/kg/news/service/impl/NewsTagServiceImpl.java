@@ -71,20 +71,19 @@ public class NewsTagServiceImpl implements NewsTagService {
         return new PageResult<>(1, newsTagVOList.size(), newsTagVOList.size(), newsTagVOList);
     }
 
-    public void deleteNewsTag(List<Long> newsTagId) {
-        Iterable<NewsTag> newsTags = newsTagRepository.findAllById(newsTagId);
-        newsTags.forEach(tag -> {
-            if (tag.getDeleteFlag()) {
-                throw new NewsTagException(NewsTagConstant.TAG_NOT_FOUND);
+    public void deleteNewsTag(Long id) {
+        newsTagMapper.queryNewsTag(NewsTagQueryDTO.builder().tagId(id).build()).forEach(tag -> {
+            if (newsRepository.countByTagId(tag.getId()) > 0) {
+                throw new NewsTagException(NewsTagConstant.TAG_HAS_NEWS);
             }
-            tag.setDeleteFlag(true);
             try {
                 ServiceUtil.autoFill(tag, OperationType.UPDATE);
             } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
+            tag.setDeleteFlag(true);
+            newsTagRepository.save(tag);
         });
-        newsTagRepository.saveAll(newsTags);
     }
 
     public void updateNewsTag(NewsTagDTO newsTagDTO) {
@@ -118,17 +117,20 @@ public class NewsTagServiceImpl implements NewsTagService {
         Page<NewsTag> newsTagPage = newsTagMapper.queryNewsTag(newsTagQueryDTO);
         List<NewsTagVO> newsTagVOList = newsTagPage.getResult().stream().map(tag -> {
             long newsAmount = newsRepository.countByTagId(tag.getId());
-            return NewsTagVO.builder()
-                    .tagId(tag.getId())
-                    .tagName(tag.getName())
-                    .description(tag.getDescription())
-                    .createTime(tag.getCreateTime())
-                    .updateTime(tag.getUpdateTime())
-                    .createUserId(tag.getCreateUser())
-                    .updateUserId(tag.getUpdateUser())
-                    .count(newsAmount)
-                    .deleteFlag(tag.getDeleteFlag())
-                    .build();
+            if (!tag.getDeleteFlag()) {
+                return NewsTagVO.builder()
+                        .tagId(tag.getId())
+                        .tagName(tag.getName())
+                        .description(tag.getDescription())
+                        .createTime(tag.getCreateTime())
+                        .updateTime(tag.getUpdateTime())
+                        .createUserId(tag.getCreateUser())
+                        .updateUserId(tag.getUpdateUser())
+                        .count(newsAmount)
+                        .deleteFlag(tag.getDeleteFlag())
+                        .build();
+            }
+            return null;
         }).toList();
         return new PageResult<>(newsTagPage.getPageNum(), newsTagPage.getPageSize(), newsTagPage.getTotal(), newsTagVOList);
     }
