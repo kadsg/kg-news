@@ -18,6 +18,7 @@ import kg.news.service.UserService;
 import kg.news.utils.KeyWordUtil;
 import kg.news.utils.ServiceUtil;
 import kg.news.vo.NewsDetailVO;
+import kg.news.vo.NewsLikeStatusVO;
 import kg.news.vo.NewsSummaryVO;
 import lombok.extern.slf4j.Slf4j;
 import org.ansj.app.keyword.Keyword;
@@ -302,6 +303,25 @@ public class NewsServiceImpl implements NewsService {
         int pageSize = pageable.getPageSize();
         PageHelper.startPage(pageNum, pageSize);
         return newsMapper.findTopByCommentCount();
+    }
+
+    public NewsLikeStatusVO getNewsLikeStatus(Long newsId) {
+        Long userId = BaseContext.getCurrentId();
+        Favorite favorite = favoriteRepository.findByNewsIdAndUserId(newsId, userId);
+        if (favorite == null) {
+            return NewsLikeStatusVO.builder()
+                    .userId(userId)
+                    .newsId(newsId)
+                    .likeStatus(false)
+                    .dislikeStatus(false)
+                    .build();
+        }
+        return NewsLikeStatusVO.builder()
+                .userId(userId)
+                .newsId(newsId)
+                .likeStatus(favorite.isFavorFlag())
+                .dislikeStatus(favorite.isDislikeFlag())
+                .build();
     }
 
     /**

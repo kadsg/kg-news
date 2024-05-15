@@ -6,6 +6,7 @@ import kg.news.result.PageResult;
 import kg.news.result.Result;
 import kg.news.service.NewsService;
 import kg.news.vo.NewsDetailVO;
+import kg.news.vo.NewsLikeStatusVO;
 import kg.news.vo.NewsSummaryVO;
 import org.springframework.web.bind.annotation.*;
 
@@ -86,5 +87,16 @@ public class NewsController {
     public Result<Object> dislikeNews(@PathVariable("id") Long newsId) {
         newsService.dislikeNews(newsId);
         return Result.success();
+    }
+
+    /**
+     * 获取新闻收藏状态
+     * @param newsId 新闻ID
+     * @return 点赞状态
+     */
+    @GetMapping("/like/status/{id}")
+    public Result<NewsLikeStatusVO> getNewsLikeStatus(@PathVariable("id") Long newsId) {
+        NewsLikeStatusVO newsLikeStatusVO = newsService.getNewsLikeStatus(newsId);
+        return Result.success(newsLikeStatusVO);
     }
 }

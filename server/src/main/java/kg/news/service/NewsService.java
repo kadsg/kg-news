@@ -5,6 +5,7 @@ import kg.news.dto.NewsPageQueryDTO;
 import kg.news.entity.News;
 import kg.news.result.PageResult;
 import kg.news.vo.NewsDetailVO;
+import kg.news.vo.NewsLikeStatusVO;
 import kg.news.vo.NewsSummaryVO;
 import org.springframework.data.domain.Pageable;
 
@@ -90,4 +91,11 @@ public interface NewsService {
      * @return 新闻列表
      */
     List<NewsSummaryVO> queryCommentedNews(Pageable pageable);
+
+    /**
+     * 获取新闻点赞状态
+     * @param newsId 新闻ID
+     * @return 新闻点赞状态
+     */
+    NewsLikeStatusVO getNewsLikeStatus(Long newsId);
 }
