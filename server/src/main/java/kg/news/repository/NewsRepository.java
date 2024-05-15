@@ -12,7 +12,7 @@ public interface NewsRepository extends JpaRepository<News, Long>, JpaSpecificat
      * @param tagId 标签ID
      * @return 新闻数量
      */
-    long countByTagId(Long tagId);
+    long countByTagIdAndDeleteFlagIsFalse(Long tagId);
 
     /**
      * 根据创建者ID查找标签ID

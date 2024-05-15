@@ -32,6 +32,7 @@
                     </if>
                 </otherwise>
             </choose>
+        AND delete_flag = false
         </where>
     </select>
 

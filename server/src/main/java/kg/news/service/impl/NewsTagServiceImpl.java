@@ -67,7 +67,7 @@ public class NewsTagServiceImpl implements NewsTagService {
         Iterable<NewsTag> iterable = newsTagRepository.findAll();
         List<NewsTagVO> newsTagVOList = new ArrayList<>();
         iterable.forEach(tag -> {
-            long newsAmount = newsRepository.countByTagId(tag.getId());
+            long newsAmount = newsRepository.countByTagIdAndDeleteFlagIsFalse(tag.getId());
             NewsTagVO newsTagVO = NewsTagVO.builder()
                     .tagId(tag.getId())
                     .tagName(tag.getName())
@@ -86,7 +86,7 @@ public class NewsTagServiceImpl implements NewsTagService {
 
     public void deleteNewsTag(Long id) {
         newsTagMapper.queryNewsTag(NewsTagQueryDTO.builder().tagId(id).build()).forEach(tag -> {
-            if (newsRepository.countByTagId(tag.getId()) > 0) {
+            if (newsRepository.countByTagIdAndDeleteFlagIsFalse(tag.getId()) > 0) {
                 throw new NewsTagException(NewsTagConstant.TAG_HAS_NEWS);
             }
             try {
@@ -124,12 +124,12 @@ public class NewsTagServiceImpl implements NewsTagService {
         int pageSize = newsTagQueryDTO.getPageSize();
         if (pageNum <= 0 || pageSize <= 0) {
             pageNum = 1;
-            pageSize = 10;
+            pageSize = 1000;
         }
         PageHelper.startPage(pageNum, pageSize);
         Page<NewsTag> newsTagPage = newsTagMapper.queryNewsTag(newsTagQueryDTO);
         List<NewsTagVO> newsTagVOList = newsTagPage.getResult().stream().map(tag -> {
-            long newsAmount = newsRepository.countByTagId(tag.getId());
+            long newsAmount = newsRepository.countByTagIdAndDeleteFlagIsFalse(tag.getId());
             if (!tag.getDeleteFlag()) {
                 return NewsTagVO.builder()
                         .tagId(tag.getId())
@@ -151,7 +151,7 @@ public class NewsTagServiceImpl implements NewsTagService {
     public NewsTagVO getNewsTag(Long tagId) {
         NewsTag newsTag = newsTagRepository.findById(tagId).orElse(null);
         if (newsTag != null) {
-            long newsAmount = newsRepository.countByTagId(newsTag.getId());
+            long newsAmount = newsRepository.countByTagIdAndDeleteFlagIsFalse(newsTag.getId());
             return NewsTagVO.builder()
                     .tagId(newsTag.getId())
                     .tagName(newsTag.getName())
@@ -176,7 +176,7 @@ public class NewsTagServiceImpl implements NewsTagService {
         Iterable<NewsTag> newsTags = newsTagRepository.findAllById(tagIdList);
         List<NewsTagVO> newsTagVOList = new ArrayList<>();
         newsTags.forEach(tag -> {
-            long newsAmount = newsRepository.countByTagId(tag.getId());
+            long newsAmount = newsRepository.countByTagIdAndDeleteFlagIsFalse(tag.getId());
             NewsTagVO newsTagVO = NewsTagVO.builder()
                     .tagId(tag.getId())
                     .tagName(tag.getName())
