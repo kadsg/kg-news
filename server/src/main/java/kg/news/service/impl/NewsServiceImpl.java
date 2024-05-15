@@ -4,12 +4,14 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import kg.news.constant.NewsConstant;
 import kg.news.context.BaseContext;
+import kg.news.dto.FavoriteQueryDTO;
 import kg.news.dto.HistorySaveDTO;
 import kg.news.dto.NewsDTO;
 import kg.news.dto.NewsPageQueryDTO;
 import kg.news.entity.*;
 import kg.news.enumration.OperationType;
 import kg.news.exception.NewsException;
+import kg.news.mapper.FavoriteMapper;
 import kg.news.mapper.NewsMapper;
 import kg.news.repository.*;
 import kg.news.result.PageResult;
@@ -52,9 +54,10 @@ public class NewsServiceImpl implements NewsService {
     private final RoleMapperRepository roleMapperRepository;
     private final NewsTagRepository newsTagRepository;
     private final UserInterestRepository userInterestRepository;
+    private final FavoriteMapper favoriteMapper;
 
     public NewsServiceImpl(NewsRepository newsRepository, NewsMapper newsMapper, UserService userService, FavoriteRepository favoriteRepository, NewsKeyWordRepository newsKeyWordRepository, HistoryRepository historyRepository, RoleMapperRepository roleMapperRepository,
-                           NewsTagRepository newsTagRepository, UserInterestRepository userInterestRepository) {
+                           NewsTagRepository newsTagRepository, UserInterestRepository userInterestRepository, FavoriteMapper favoriteMapper) {
         this.newsRepository = newsRepository;
         this.newsMapper = newsMapper;
         this.userService = userService;
@@ -64,6 +67,7 @@ public class NewsServiceImpl implements NewsService {
         this.roleMapperRepository = roleMapperRepository;
         this.newsTagRepository = newsTagRepository;
         this.userInterestRepository = userInterestRepository;
+        this.favoriteMapper = favoriteMapper;
     }
 
     @Transactional
@@ -322,6 +326,18 @@ public class NewsServiceImpl implements NewsService {
                 .likeStatus(favorite.isFavorFlag())
                 .dislikeStatus(favorite.isDislikeFlag())
                 .build();
+    }
+
+    public PageResult<NewsSummaryVO> getFavoriteNews(FavoriteQueryDTO favoriteQueryDTO) {
+        int pageNum = favoriteQueryDTO.getPageNum();
+        int pageSize = favoriteQueryDTO.getPageSize();
+        if (pageNum <= 0 || pageSize <= 0) {
+            pageNum = 1;
+            pageSize = 10;
+        }
+        PageHelper.startPage(pageNum, pageSize);
+        Page<NewsSummaryVO> newsPage = favoriteMapper.queryFavoriteNews(favoriteQueryDTO);
+        return new PageResult<>(newsPage.getPageNum(), newsPage.getPageSize(), newsPage.getTotal(), newsPage.getResult());
     }
 
     /**

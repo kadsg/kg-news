@@ -1,5 +1,6 @@
 package kg.news.service;
 
+import kg.news.dto.FavoriteQueryDTO;
 import kg.news.dto.NewsDTO;
 import kg.news.dto.NewsPageQueryDTO;
 import kg.news.entity.News;
@@ -98,4 +99,11 @@ public interface NewsService {
      * @return 新闻点赞状态
      */
     NewsLikeStatusVO getNewsLikeStatus(Long newsId);
+
+    /**
+     * 获取收藏新闻
+     * @param favoriteQueryDTO 查询条件
+     * @return 新闻列表
+     */
+    PageResult<NewsSummaryVO> getFavoriteNews(FavoriteQueryDTO favoriteQueryDTO);
 }

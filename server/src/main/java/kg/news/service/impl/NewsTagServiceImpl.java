@@ -5,11 +5,13 @@ import com.github.pagehelper.PageHelper;
 import kg.news.constant.NewsTagConstant;
 import kg.news.dto.NewsTagDTO;
 import kg.news.dto.NewsTagQueryDTO;
+import kg.news.entity.Favorite;
 import kg.news.entity.News;
 import kg.news.entity.NewsTag;
 import kg.news.enumration.OperationType;
 import kg.news.exception.NewsTagException;
 import kg.news.mapper.NewsTagMapper;
+import kg.news.repository.FavoriteRepository;
 import kg.news.repository.NewsRepository;
 import kg.news.repository.NewsTagRepository;
 import kg.news.result.PageResult;
@@ -27,11 +29,13 @@ public class NewsTagServiceImpl implements NewsTagService {
     private final NewsTagRepository newsTagRepository;
     private final NewsTagMapper newsTagMapper;
     private final NewsRepository newsRepository;
+    private final FavoriteRepository favoriteRepository;
 
-    public NewsTagServiceImpl(NewsTagRepository newsTagRepository, NewsTagMapper newsTagMapper, NewsRepository newsRepository) {
+    public NewsTagServiceImpl(NewsTagRepository newsTagRepository, NewsTagMapper newsTagMapper, NewsRepository newsRepository, FavoriteRepository favoriteRepository) {
         this.newsTagRepository = newsTagRepository;
         this.newsTagMapper = newsTagMapper;
         this.newsRepository = newsRepository;
+        this.favoriteRepository = favoriteRepository;
     }
 
     public void addNewsTag(NewsTagDTO newsTagDTO) {
@@ -172,6 +176,35 @@ public class NewsTagServiceImpl implements NewsTagService {
         if (newsList.isEmpty()) {
             return new ArrayList<>();
         }
+        List<Long> tagIdList = newsList.stream().map(News::getTagId).toList();
+        Iterable<NewsTag> newsTags = newsTagRepository.findAllById(tagIdList);
+        List<NewsTagVO> newsTagVOList = new ArrayList<>();
+        newsTags.forEach(tag -> {
+            long newsAmount = newsRepository.countByTagIdAndDeleteFlagIsFalse(tag.getId());
+            NewsTagVO newsTagVO = NewsTagVO.builder()
+                    .tagId(tag.getId())
+                    .tagName(tag.getName())
+                    .description(tag.getDescription())
+                    .createTime(tag.getCreateTime())
+                    .updateTime(tag.getUpdateTime())
+                    .createUserId(tag.getCreateUser())
+                    .updateUserId(tag.getUpdateUser())
+                    .count(newsAmount)
+                    .deleteFlag(tag.getDeleteFlag())
+                    .build();
+            newsTagVOList.add(newsTagVO);
+        });
+        return newsTagVOList;
+    }
+
+    public List<NewsTagVO> getFavoriteNewsTag(Long userId) {
+        List<Favorite> favoriteList = favoriteRepository.findByUserId(userId);
+        if (favoriteList.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<Long> newsIdList = favoriteList.stream().map(Favorite::getNewsId).toList();
+        List<News> newsList = newsRepository.findAllById(newsIdList);
+        assert newsList.size() == newsIdList.size();
         List<Long> tagIdList = newsList.stream().map(News::getTagId).toList();
         Iterable<NewsTag> newsTags = newsTagRepository.findAllById(tagIdList);
         List<NewsTagVO> newsTagVOList = new ArrayList<>();

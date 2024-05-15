@@ -96,4 +96,14 @@ public class NewsTagController {
         List<NewsTagVO> newsTagVOList = newsTagService.getPublishedNewsTags(userId);
         return Result.success(newsTagVOList);
     }
+
+
+    /**
+     * 获取某个用户收藏新闻的所有标签
+     */
+    @GetMapping("/favorite/{userId}")
+    public Result<List<NewsTagVO>> getFavoriteNewsTags(@PathVariable Long userId) {
+        List<NewsTagVO> newsTagVOList = newsTagService.getFavoriteNewsTag(userId);
+        return Result.success(newsTagVOList);
+    }
 }

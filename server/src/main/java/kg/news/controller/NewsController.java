@@ -1,5 +1,6 @@
 package kg.news.controller;
 
+import kg.news.dto.FavoriteQueryDTO;
 import kg.news.dto.NewsDTO;
 import kg.news.dto.NewsPageQueryDTO;
 import kg.news.result.PageResult;
@@ -98,5 +99,11 @@ public class NewsController {
     public Result<NewsLikeStatusVO> getNewsLikeStatus(@PathVariable("id") Long newsId) {
         NewsLikeStatusVO newsLikeStatusVO = newsService.getNewsLikeStatus(newsId);
         return Result.success(newsLikeStatusVO);
+    }
+
+    @PostMapping("/favorite")
+    public Result<PageResult<NewsSummaryVO>> getFavoriteNews(@RequestBody FavoriteQueryDTO favoriteQueryDTO) {
+        PageResult<NewsSummaryVO> newsSummaryVOList = newsService.getFavoriteNews(favoriteQueryDTO);
+        return Result.success(newsSummaryVOList);
     }
 }
