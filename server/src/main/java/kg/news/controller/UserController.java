@@ -49,6 +49,11 @@ public class UserController {
         return Result.success(userVO);
     }
 
+    /**
+     * 用户信息修改
+     * @param userInfoDTO 用户信息
+     * @return 修改结果
+     */
     @PutMapping("/update")
     public Result<Object> updateUser(@RequestBody UserInfoDTO userInfoDTO) {
         userService.updateUser(userInfoDTO);

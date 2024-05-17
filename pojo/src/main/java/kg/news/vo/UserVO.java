@@ -49,6 +49,10 @@ public class UserVO implements Serializable {
      */
     private String description;
     /**
+     * 头像
+     */
+    private String avatar;
+    /**
      * 创建人
      */
     private Long createUser;
