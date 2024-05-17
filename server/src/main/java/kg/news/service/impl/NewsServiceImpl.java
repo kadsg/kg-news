@@ -135,7 +135,7 @@ public class NewsServiceImpl implements NewsService {
     }
 
     public PageResult<NewsSummaryVO> queryNews(NewsPageQueryDTO newsPageQueryDTO) {
-        if (newsPageQueryDTO.getNewsTagId() == null || newsPageQueryDTO.getNewsTagId() == 0) {
+        if (newsPageQueryDTO.getNewsTagId() != null && newsPageQueryDTO.getNewsTagId() == 0) {
             return getRecommendNews(BaseContext.getCurrentId());
         }
 
@@ -209,7 +209,7 @@ public class NewsServiceImpl implements NewsService {
     public void likeNews(Long newsId) {
         News news = newsRepository.findById(newsId).orElse(null);
         Long userId = BaseContext.getCurrentId();
-        Favorite favorite = favoriteRepository.findById(newsId).orElse(null);
+        Favorite favorite = favoriteRepository.findByNewsIdAndUserId(newsId, userId);
 
         if (news == null || news.getDeleteFlag()) {
             throw new NewsException(NewsConstant.NEWS_NOT_FOUND);
@@ -245,7 +245,7 @@ public class NewsServiceImpl implements NewsService {
     public void dislikeNews(Long newsId) {
         News news = newsRepository.findById(newsId).orElse(null);
         Long userId = BaseContext.getCurrentId();
-        Favorite favorite = favoriteRepository.findById(newsId).orElse(null);
+        Favorite favorite = favoriteRepository.findByNewsIdAndUserId(newsId, userId);
 
         if (news == null || news.getDeleteFlag()) {
             throw new NewsException(NewsConstant.NEWS_NOT_FOUND);

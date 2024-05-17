@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class NewsTagServiceImpl implements NewsTagService {
@@ -132,7 +133,7 @@ public class NewsTagServiceImpl implements NewsTagService {
         }
         PageHelper.startPage(pageNum, pageSize);
         Page<NewsTag> newsTagPage = newsTagMapper.queryNewsTag(newsTagQueryDTO);
-        List<NewsTagVO> newsTagVOList = newsTagPage.getResult().stream().map(tag -> {
+        List<NewsTagVO> newsTagVOList = new ArrayList<>(newsTagPage.getResult().stream().map(tag -> {
             long newsAmount = newsRepository.countByTagIdAndDeleteFlagIsFalse(tag.getId());
             if (!tag.getDeleteFlag()) {
                 return NewsTagVO.builder()
@@ -148,7 +149,9 @@ public class NewsTagServiceImpl implements NewsTagService {
                         .build();
             }
             return null;
-        }).toList();
+        }).toList());
+        // 删除null元素
+        newsTagVOList.removeIf(Objects::isNull);
         return new PageResult<>(newsTagPage.getPageNum(), newsTagPage.getPageSize(), newsTagPage.getTotal(), newsTagVOList);
     }
 
