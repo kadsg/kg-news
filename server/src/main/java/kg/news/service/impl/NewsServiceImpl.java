@@ -27,6 +27,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.ansj.app.keyword.Keyword;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.BeanUtils;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -74,6 +76,7 @@ public class NewsServiceImpl implements NewsService {
     }
 
     @Transactional
+    @CacheEvict(cacheNames = "newsCache", allEntries = true)
     public void post(NewsDTO newsDTO) {
         News news = News.builder()
                 .tagId(newsDTO.getTagId())
@@ -134,6 +137,9 @@ public class NewsServiceImpl implements NewsService {
         newsRepository.save(news);
     }
 
+    @Cacheable(cacheNames = "newsCache",
+            key = "#newsPageQueryDTO.newsTagId + '_' + #newsPageQueryDTO.pageNum + '_' + #newsPageQueryDTO.pageSize",
+            unless = "#result.list.size() == 0 OR #newsPageQueryDTO.newsTagId == 0")
     public PageResult<NewsSummaryVO> queryNews(NewsPageQueryDTO newsPageQueryDTO) {
         if (newsPageQueryDTO.getNewsTagId() != null && newsPageQueryDTO.getNewsTagId() == 0) {
             return getRecommendNews(BaseContext.getCurrentId());
@@ -158,6 +164,7 @@ public class NewsServiceImpl implements NewsService {
     }
 
     @Transactional
+    @CacheEvict(cacheNames = "newsCache", allEntries = true)
     public NewsDetailVO queryNewsDetail(Long newsId) {
         // 1. 查询新闻详情
         News news = newsRepository.findById(newsId).orElse(null);
@@ -206,6 +213,7 @@ public class NewsServiceImpl implements NewsService {
     }
 
     @Transactional
+    @CacheEvict(cacheNames = "newsCache", allEntries = true)
     public void likeNews(Long newsId) {
         News news = newsRepository.findById(newsId).orElse(null);
         Long userId = BaseContext.getCurrentId();
@@ -242,6 +250,7 @@ public class NewsServiceImpl implements NewsService {
     }
 
     @Transactional
+    @CacheEvict(cacheNames = "newsCache", allEntries = true)
     public void dislikeNews(Long newsId) {
         News news = newsRepository.findById(newsId).orElse(null);
         Long userId = BaseContext.getCurrentId();

@@ -18,6 +18,8 @@ import kg.news.result.PageResult;
 import kg.news.service.NewsTagService;
 import kg.news.utils.ServiceUtil;
 import kg.news.vo.NewsTagVO;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.InvocationTargetException;
@@ -39,6 +41,7 @@ public class NewsTagServiceImpl implements NewsTagService {
         this.favoriteRepository = favoriteRepository;
     }
 
+    @CacheEvict(cacheNames = "newsTagCache", allEntries = true)
     public void addNewsTag(NewsTagDTO newsTagDTO) {
         NewsTag byName = newsTagRepository.findByName(newsTagDTO.getName());
         if (byName != null) {
@@ -68,6 +71,7 @@ public class NewsTagServiceImpl implements NewsTagService {
         newsTagRepository.save(newsTag);
     }
 
+    @Cacheable(cacheNames = "newsTagCache", key = "#root.methodName")
     public PageResult<NewsTagVO> getAllNewsTag() {
         Iterable<NewsTag> iterable = newsTagRepository.findAll();
         List<NewsTagVO> newsTagVOList = new ArrayList<>();
@@ -89,6 +93,7 @@ public class NewsTagServiceImpl implements NewsTagService {
         return new PageResult<>(1, newsTagVOList.size(), newsTagVOList.size(), newsTagVOList);
     }
 
+    @CacheEvict(cacheNames = "newsTagCache", allEntries = true)
     public void deleteNewsTag(Long id) {
         newsTagMapper.queryNewsTag(NewsTagQueryDTO.builder().tagId(id).build()).forEach(tag -> {
             if (newsRepository.countByTagIdAndDeleteFlagIsFalse(tag.getId()) > 0) {
@@ -104,6 +109,7 @@ public class NewsTagServiceImpl implements NewsTagService {
         });
     }
 
+    @CacheEvict(cacheNames = "newsTagCache", allEntries = true)
     public void updateNewsTag(NewsTagDTO newsTagDTO) {
         Long id = newsTagDTO.getId();
         NewsTag newsTag = newsTagRepository.findById(id).orElse(null);
@@ -120,10 +126,13 @@ public class NewsTagServiceImpl implements NewsTagService {
         newsTagRepository.save(newsTag);
     }
 
+    @Cacheable(cacheNames = "newsTagCache", key = "#tagId")
     public NewsTag queryNewsTag(Long tagId) {
         return newsTagRepository.findById(tagId).orElse(null);
     }
 
+    @Cacheable(cacheNames = "newsTagCache",
+            key = "#newsTagQueryDTO.pageNum + '_' + #newsTagQueryDTO.pageSize")
     public PageResult<NewsTagVO> queryNewsTag(NewsTagQueryDTO newsTagQueryDTO) {
         int pageNum = newsTagQueryDTO.getPageNum();
         int pageSize = newsTagQueryDTO.getPageSize();
@@ -155,6 +164,7 @@ public class NewsTagServiceImpl implements NewsTagService {
         return new PageResult<>(newsTagPage.getPageNum(), newsTagPage.getPageSize(), newsTagPage.getTotal(), newsTagVOList);
     }
 
+    @Cacheable(cacheNames = "newsTagCache", key = "#tagId")
     public NewsTagVO getNewsTag(Long tagId) {
         NewsTag newsTag = newsTagRepository.findById(tagId).orElse(null);
         if (newsTag != null) {

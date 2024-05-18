@@ -42,6 +42,15 @@ spring:
     username: ${kg.datasource.username}
     password: ${kg.datasource.password}
 
+  data:
+    redis:
+      host: ${kg.redis.host}
+      port: ${kg.redis.port}
+      password: ${kg.redis.password}
+      database: ${kg.redis.database}
+
+
+
 kg:
   jwt:
     secret-key: ${kg.jwt.secret-key}
