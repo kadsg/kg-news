@@ -3,7 +3,8 @@
 <mapper namespace="kg.news.mapper.FavoriteMapper">
 
     <resultMap id="favoriteMapper" type="kg.news.vo.NewsSummaryVO">
-        <id column="id" property="newsId"/>
+        <id column="news_id" property="newsId"/>
+        <result column="title" property="title"/>
         <result column="tag_id" property="tagId"/>
         <result column="create_user" property="mediaId"/>
         <result column="nickname" property="mediaName"/>
