@@ -48,6 +48,13 @@ spring:
       port: ${kg.redis.port}
       password: ${kg.redis.password}
       database: ${kg.redis.database}
+      lettuce:
+        pool:
+          max-active: ${kg.redis.lettuce.pool.max-active}
+          max-wait: ${kg.redis.lettuce.pool.max-wait}
+          max-idle: ${kg.redis.lettuce.pool.max-idle}
+          min-idle: ${kg.redis.lettuce.pool.min-idle}
+          time-between-eviction-runs: ${kg.redis.lettuce.pool.time-between-eviction-runs}
 
 
 
