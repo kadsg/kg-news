@@ -1,7 +1,9 @@
 package kg.news.service.impl;
 
+import com.alibaba.fastjson2.JSONObject;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import jakarta.annotation.Resource;
 import kg.news.constant.NewsConstant;
 import kg.news.context.BaseContext;
 import kg.news.dto.FavoriteQueryDTO;
@@ -30,6 +32,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,41 +44,35 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @Slf4j
 @Service
 public class NewsServiceImpl implements NewsService {
 
-    private final ExecutorService executorService = Executors.newFixedThreadPool(15); // Change this number based on your needs
-
-    private final NewsRepository newsRepository;
-    private final NewsMapper newsMapper;
-    private final UserService userService;
-    private final FavoriteRepository favoriteRepository;
-    private final NewsKeyWordRepository newsKeyWordRepository;
-    private final HistoryRepository historyRepository;
-    private final RoleMapperRepository roleMapperRepository;
-    private final NewsTagRepository newsTagRepository;
-    private final UserInterestRepository userInterestRepository;
-    private final FavoriteMapper favoriteMapper;
-    private final RecommendService recommendService;
-
-    public NewsServiceImpl(NewsRepository newsRepository, NewsMapper newsMapper, UserService userService, FavoriteRepository favoriteRepository, NewsKeyWordRepository newsKeyWordRepository, HistoryRepository historyRepository, RoleMapperRepository roleMapperRepository,
-                           NewsTagRepository newsTagRepository, UserInterestRepository userInterestRepository, FavoriteMapper favoriteMapper, RecommendService recommendService) {
-        this.newsRepository = newsRepository;
-        this.newsMapper = newsMapper;
-        this.userService = userService;
-        this.favoriteRepository = favoriteRepository;
-        this.newsKeyWordRepository = newsKeyWordRepository;
-        this.historyRepository = historyRepository;
-        this.roleMapperRepository = roleMapperRepository;
-        this.newsTagRepository = newsTagRepository;
-        this.userInterestRepository = userInterestRepository;
-        this.favoriteMapper = favoriteMapper;
-        this.recommendService = recommendService;
-    }
+    @Resource
+    KafkaTemplate<String, String> kafkaTemplate;
+    @Resource
+    private NewsRepository newsRepository;
+    @Resource
+    private NewsMapper newsMapper;
+    @Resource
+    private UserService userService;
+    @Resource
+    private FavoriteRepository favoriteRepository;
+    @Resource
+    private NewsKeyWordRepository newsKeyWordRepository;
+    @Resource
+    private HistoryRepository historyRepository;
+    @Resource
+    private RoleMapperRepository roleMapperRepository;
+    @Resource
+    private NewsTagRepository newsTagRepository;
+    @Resource
+    private UserInterestRepository userInterestRepository;
+    @Resource
+    private FavoriteMapper favoriteMapper;
+    @Resource
+    private RecommendService recommendService;
 
     @Transactional
     @CacheEvict(cacheNames = "newsCache", allEntries = true)
@@ -90,34 +89,56 @@ public class NewsServiceImpl implements NewsService {
             throw new RuntimeException(e);
         }
         News save = newsRepository.save(news);
+        generateKeyWords(save);
+    }
 
-        executorService.submit(() -> {
-            // 提取关键词
-            List<Keyword> keyWordList = KeyWordUtil.getKeyWordList(newsDTO.getTitle(), newsDTO.getContent(), 5);
-            // 构造关键词权重Map
-            Map<String, Double> keyWordMap = new HashMap<>();
-            keyWordList.forEach(keyword -> {
-                String key = keyword.getName();
-                Double weight = keyword.getScore();
-                keyWordMap.put(key, weight);
-            });
-            System.out.println("关键词权重Map：" + keyWordMap);
-            // 关键词权重Map示例：
-            // {乌方=138.15585324319431, 乌多=144.2370822012652, 大规模=55.26272908435627, 俄军=55.26262506735223, 设施=55.26206753491392}
-            // 将其转换为JSON字符串
-            try {
-                ObjectMapper objectMapper = new ObjectMapper();
-                String asString = objectMapper.writeValueAsString(keyWordMap);
-                NewsKeyWord newsKeyWord = NewsKeyWord.builder()
-                        .newsId(save.getId())
-                        .keyWord(asString)
-                        .build();
-                // 保存该关键词
-                newsKeyWordRepository.save(newsKeyWord);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+
+    /**
+     * 生成新闻关键词（发送）
+     *
+     * @param news 新闻
+     */
+    @Async
+    protected void generateKeyWords(News news) {
+        kafkaTemplate.send(NewsConstant.NEWS_TOPIC, String.valueOf(news.getId()), JSONObject.toJSONString(news));
+        log.info("成功发送消息，新闻标题为：{}", news.getTitle());
+    }
+
+    /**
+     * 监听数据并处理
+     *
+     * @param newsMessage 监听到的新闻
+     */
+    @KafkaListener(topics = NewsConstant.NEWS_TOPIC)
+    protected void process(String newsMessage) {
+        News news = JSONObject.parseObject(newsMessage, News.class);
+        log.info("监听到消息，新闻标题为：{}", news.getTitle());
+        // 提取关键词
+        List<Keyword> keyWordList = KeyWordUtil.getKeyWordList(news.getTitle(), news.getContent(), 5);
+        // 构造关键词权重Map
+        Map<String, Double> keyWordMap = new HashMap<>();
+        keyWordList.forEach(keyword -> {
+            String key = keyword.getName();
+            Double weight = keyword.getScore();
+            keyWordMap.put(key, weight);
         });
+        System.out.println("关键词权重Map：" + keyWordMap);
+        // 关键词权重Map示例：
+        // {乌方=138.15585324319431, 乌多=144.2370822012652, 大规模=55.26272908435627, 俄军=55.26262506735223, 设施=55.26206753491392}
+        // 将其转换为JSON字符串
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            String asString = objectMapper.writeValueAsString(keyWordMap);
+            NewsKeyWord newsKeyWord = NewsKeyWord.builder()
+                    .newsId(news.getId())
+                    .keyWord(asString)
+                    .build();
+            // 保存该关键词
+            newsKeyWordRepository.save(newsKeyWord);
+            log.info("新闻关键字保存成功，新闻：{}，关键词：{}", news.getTitle(), newsKeyWord.getKeyWord());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void delete(Long newsId) {
@@ -364,6 +385,7 @@ public class NewsServiceImpl implements NewsService {
 
     /**
      * 保存浏览历史记录
+     *
      * @param historySaveDTO 浏览历史记录
      */
     private void save(HistorySaveDTO historySaveDTO) {
@@ -402,4 +424,5 @@ public class NewsServiceImpl implements NewsService {
         interest.setInterest(newInterestJson);
         userInterestRepository.save(interest);
     }
+
 }
