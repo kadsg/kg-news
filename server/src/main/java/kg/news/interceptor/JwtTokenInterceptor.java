@@ -43,4 +43,8 @@ public class JwtTokenInterceptor implements HandlerInterceptor {
         log.info("当前用户id：{}", id);
         return true;
     }
+
+    public void afterCompletion(@Nonnull HttpServletRequest request, @Nonnull HttpServletResponse response, @Nonnull Object handler, Exception ex) {
+        BaseContext.remove();
+    }
 }

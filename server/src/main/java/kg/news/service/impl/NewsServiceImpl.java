@@ -21,6 +21,7 @@ import kg.news.service.NewsService;
 import kg.news.service.RecommendService;
 import kg.news.service.UserService;
 import kg.news.utils.KeyWordUtil;
+import kg.news.utils.RedisUtils;
 import kg.news.utils.ServiceUtil;
 import kg.news.vo.NewsDetailVO;
 import kg.news.vo.NewsLikeStatusVO;
@@ -44,6 +45,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.*;
 
 @Slf4j
 @Service
@@ -51,6 +53,8 @@ public class NewsServiceImpl implements NewsService {
 
     @Resource
     KafkaTemplate<String, String> kafkaTemplate;
+    @Resource
+    private RedisUtils redisUtils;
     @Resource
     private NewsRepository newsRepository;
     @Resource
@@ -73,9 +77,13 @@ public class NewsServiceImpl implements NewsService {
     private FavoriteMapper favoriteMapper;
     @Resource
     private RecommendService recommendService;
+    // 定时任务线程池
+    private final ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(10);
+    // 并发安全的Map，用于暂存点赞任务
+    private final ConcurrentHashMap<String, ScheduledFuture<?>> likeTasks = new ConcurrentHashMap<>();
 
     @Transactional
-    @CacheEvict(cacheNames = "newsCache", allEntries = true)
+    @CacheEvict(cacheNames = NewsConstant.NEWS + ':', allEntries = true)
     public void post(NewsDTO newsDTO) {
         News news = News.builder()
                 .tagId(newsDTO.getTagId())
@@ -158,7 +166,7 @@ public class NewsServiceImpl implements NewsService {
         newsRepository.save(news);
     }
 
-    @Cacheable(cacheNames = "newsCache",
+    @Cacheable(cacheNames = NewsConstant.NEWS + ':',
             key = "#newsPageQueryDTO.newsTagId + '_' + #newsPageQueryDTO.pageNum + '_' + #newsPageQueryDTO.pageSize",
             unless = "#result.list.size() == 0 OR #newsPageQueryDTO.newsTagId == 0")
     public PageResult<NewsSummaryVO> queryNews(NewsPageQueryDTO newsPageQueryDTO) {
@@ -185,7 +193,7 @@ public class NewsServiceImpl implements NewsService {
     }
 
     @Transactional
-    @CacheEvict(cacheNames = "newsCache", allEntries = true)
+    @CacheEvict(cacheNames = NewsConstant.NEWS + ':', allEntries = true)
     public NewsDetailVO queryNewsDetail(Long newsId) {
         // 1. 查询新闻详情
         News news = newsRepository.findById(newsId).orElse(null);
@@ -233,45 +241,77 @@ public class NewsServiceImpl implements NewsService {
         return newsDetailVO;
     }
 
-    @Transactional
-    @CacheEvict(cacheNames = "newsCache", allEntries = true)
+
     public void likeNews(Long newsId) {
         News news = newsRepository.findById(newsId).orElse(null);
         Long userId = BaseContext.getCurrentId();
-        Favorite favorite = favoriteRepository.findByNewsIdAndUserId(newsId, userId);
 
         if (news == null || news.getDeleteFlag()) {
             throw new NewsException(NewsConstant.NEWS_NOT_FOUND);
         }
-        // 如果没有记录，则创建一条
-        if (favorite == null) {
-            favorite = Favorite.builder()
-                    .newsId(newsId)
-                    .userId(userId)
-                    .favorFlag(true)
-                    .build();
-            news.setLikeCount(news.getLikeCount() + 1);
-        } else {
-            // 如果该记录为“点赞“，此时进行取消点赞操作
-            if (favorite.isFavorFlag()) {
-                news.setLikeCount(news.getLikeCount() - 1);
+
+        String taskKey = userId + ":" + newsId;
+        ScheduledFuture<?> scheduledFuture = likeTasks.get(taskKey);
+        // 如果任务已存在且未完成，则取消之前的任务
+        if (scheduledFuture != null && !scheduledFuture.isDone()) {
+            scheduledFuture.cancel(true);
+        } else if (scheduledFuture != null && scheduledFuture.isDone()) {
+            // 如果任务已完成，则删除任务
+            likeTasks.remove(taskKey);
+        }
+        // 将当前任务添加到线程池
+        // 5秒后执行任务
+        ScheduledFuture<?> schedule = scheduledThreadPool.schedule(() -> executeLikeNews(newsId, userId), 5, TimeUnit.SECONDS);
+        // 将任务放入Map
+        likeTasks.put(taskKey, schedule);
+        log.info("用户 {} 对新闻 {} 的点赞任务已加入队列", userId, newsId);
+    }
+
+    private void executeLikeNews(Long newsId, Long userId) {
+        News news = newsRepository.findById(newsId).orElse(null);
+        if (news == null || news.getDeleteFlag()) {
+            throw new NewsException(NewsConstant.NEWS_NOT_FOUND);
+        }
+
+        String likeHashKey = NewsConstant.NEWS_LIKE + ":" + newsId;
+        short likeCount;
+
+        Object likeCache = redisUtils.hmGet(likeHashKey, userId);
+        if (likeCache == null) {
+            Favorite favorite = favoriteRepository.findByNewsIdAndUserId(newsId, userId);
+            if (favorite != null) {
+                boolean likeFlag = favorite.isFavorFlag();
+                likeCount = (short) (likeFlag ? -1 : 1);
             } else {
-                // 如果该记录为”取消点赞“，此时进行点赞操作
-                news.setLikeCount(news.getLikeCount() + 1);
+                likeCount = 1;
             }
-            favorite.setFavorFlag(!favorite.isFavorFlag());
-            // 如果有点踩记录，则取消
-            if (favorite.isDislikeFlag()) {
-                favorite.setDislikeFlag(false);
-                news.setUnlikeCount(news.getUnlikeCount() - 1);
+        } else {
+            String[] split = likeCache.toString().split(":");
+            likeCount = Short.parseShort(split[0]);
+            likeCount = (short) ((likeCount > 0) ? -1 : 1);
+        }
+
+        if (likeCount > 0) {
+            log.info("用户 {} 点赞了新闻 {} ", userId, newsId);
+        } else {
+            log.info("用户 {} 取消点赞了新闻 {} ", userId, newsId);
+        }
+        // 加锁，防止删除数据前的一瞬间写入新的数据
+        // 此种做法性能较好，缺点是会产生短时间内的数据不一致，且内存中锁的数量会增加
+        String lockKey = NewsConstant.NEWS_LIKE_USER_LOCK + ':' + newsId + ':' + userId;
+        while (!redisUtils.lock(lockKey, Thread.currentThread(), 5L)) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
-        favoriteRepository.save(favorite);
-        newsRepository.save(news);
+        redisUtils.hmSet(likeHashKey, userId, likeCount);
+        // 任务执行完毕
     }
 
     @Transactional
-    @CacheEvict(cacheNames = "newsCache", allEntries = true)
+    @CacheEvict(cacheNames = NewsConstant.NEWS + ':', allEntries = true)
     public void dislikeNews(Long newsId) {
         News news = newsRepository.findById(newsId).orElse(null);
         Long userId = BaseContext.getCurrentId();
