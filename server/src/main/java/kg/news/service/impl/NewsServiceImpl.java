@@ -36,6 +36,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -81,6 +82,8 @@ public class NewsServiceImpl implements NewsService {
     private final ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(10);
     // 并发安全的Map，用于暂存点赞任务
     private final ConcurrentHashMap<String, ScheduledFuture<?>> likeTasks = new ConcurrentHashMap<>();
+    // 并发安全的Map，用于暂存点赞的点击次数
+    private final ConcurrentHashMap<String, Short> likeClickMap = new ConcurrentHashMap<>();
 
     @Transactional
     @CacheEvict(cacheNames = NewsConstant.NEWS + ':', allEntries = true)
@@ -255,16 +258,20 @@ public class NewsServiceImpl implements NewsService {
         // 如果任务已存在且未完成，则取消之前的任务
         if (scheduledFuture != null && !scheduledFuture.isDone()) {
             scheduledFuture.cancel(true);
-        } else if (scheduledFuture != null && scheduledFuture.isDone()) {
-            // 如果任务已完成，则删除任务
-            likeTasks.remove(taskKey);
         }
         // 将当前任务添加到线程池
         // 5秒后执行任务
         ScheduledFuture<?> schedule = scheduledThreadPool.schedule(() -> executeLikeNews(newsId, userId), 5, TimeUnit.SECONDS);
         // 将任务放入Map
         likeTasks.put(taskKey, schedule);
-        log.info("用户 {} 对新闻 {} 的点赞任务已加入队列", userId, newsId);
+        // 记录点赞的点击次数
+        Short i = likeClickMap.get(taskKey);
+        if (i == null || i == 0) {
+            likeClickMap.put(taskKey, (short) 1);
+        } else {
+            likeClickMap.put(taskKey, (short) (i + 1));
+        }
+//        log.info("用户 {} 对新闻 {} 的点赞任务已加入队列", userId, newsId);
     }
 
     private void executeLikeNews(Long newsId, Long userId) {
@@ -273,9 +280,24 @@ public class NewsServiceImpl implements NewsService {
             throw new NewsException(NewsConstant.NEWS_NOT_FOUND);
         }
 
+        // 如果点击次数为偶数，则不执行
+        String taskKey = userId + ":" + newsId;
+        if (likeClickMap.get(taskKey) % 2 == 0) {
+            log.info("无效点击，已终止用户 {} 对新闻 {} 的点赞任务", userId, newsId);
+            // 情况计时器
+            likeClickMap.remove(taskKey);
+            log.info("清空 {} 的计数器", taskKey);
+            return;
+        }
+
+        // 开始执行，情况计时器
+        likeClickMap.remove(taskKey);
         String likeHashKey = NewsConstant.NEWS_LIKE + ":" + newsId;
+        String lockKey = NewsConstant.NEWS_LIKE_USER_LOCK + ':' + newsId + ':' + userId;
         short likeCount;
 
+        // 不必加锁
+        // 即便读取到旧数据也不影响，因为会进行校验
         Object likeCache = redisUtils.hmGet(likeHashKey, userId);
         if (likeCache == null) {
             Favorite favorite = favoriteRepository.findByNewsIdAndUserId(newsId, userId);
@@ -298,7 +320,6 @@ public class NewsServiceImpl implements NewsService {
         }
         // 加锁，防止删除数据前的一瞬间写入新的数据
         // 此种做法性能较好，缺点是会产生短时间内的数据不一致，且内存中锁的数量会增加
-        String lockKey = NewsConstant.NEWS_LIKE_USER_LOCK + ':' + newsId + ':' + userId;
         while (!redisUtils.lock(lockKey, Thread.currentThread(), 5L)) {
             try {
                 Thread.sleep(1000);
@@ -465,4 +486,16 @@ public class NewsServiceImpl implements NewsService {
         userInterestRepository.save(interest);
     }
 
+    /**
+     * 删除已执行的任务
+     */
+    @Scheduled(fixedRate = 5000)
+    public void removeDoneTask() {
+        likeTasks.forEach((key, value) -> {
+            if (value.isDone()) {
+                log.info("用户 {} 对新闻 {} 的点赞任务已完成，正在移除...", key.split(":")[0], key.split(":")[1]);
+                likeTasks.remove(key);
+            }
+        });
+    }
 }
