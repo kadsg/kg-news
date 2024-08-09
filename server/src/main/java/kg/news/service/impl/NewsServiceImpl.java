@@ -82,8 +82,6 @@ public class NewsServiceImpl implements NewsService {
     private final ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(10);
     // 并发安全的Map，用于暂存点赞任务
     private final ConcurrentHashMap<String, ScheduledFuture<?>> likeTasks = new ConcurrentHashMap<>();
-    // 并发安全的Map，用于暂存点赞的点击次数
-    private final ConcurrentHashMap<String, Short> likeClickMap = new ConcurrentHashMap<>();
 
     @Transactional
     @CacheEvict(cacheNames = NewsConstant.NEWS + ':', allEntries = true)
@@ -255,9 +253,10 @@ public class NewsServiceImpl implements NewsService {
 
         String taskKey = userId + ":" + newsId;
         ScheduledFuture<?> scheduledFuture = likeTasks.get(taskKey);
-        // 如果任务已存在且未完成，则取消之前的任务
+        // 如果任务已存在且未完成，则尝试取消之前的任务
         if (scheduledFuture != null && !scheduledFuture.isDone()) {
-            scheduledFuture.cancel(true);
+            // 任务执行中不允许被打断
+            scheduledFuture.cancel(false);
         }
         // 将当前任务添加到线程池
         // 5秒后执行任务
@@ -265,13 +264,8 @@ public class NewsServiceImpl implements NewsService {
         // 将任务放入Map
         likeTasks.put(taskKey, schedule);
         // 记录点赞的点击次数
-        Short i = likeClickMap.get(taskKey);
-        if (i == null || i == 0) {
-            likeClickMap.put(taskKey, (short) 1);
-        } else {
-            likeClickMap.put(taskKey, (short) (i + 1));
-        }
-//        log.info("用户 {} 对新闻 {} 的点赞任务已加入队列", userId, newsId);
+        // 记录点赞操作次数
+        redisUtils.increment(taskKey);
     }
 
     private void executeLikeNews(Long newsId, Long userId) {
@@ -282,16 +276,17 @@ public class NewsServiceImpl implements NewsService {
 
         // 如果点击次数为偶数，则不执行
         String taskKey = userId + ":" + newsId;
-        if (likeClickMap.get(taskKey) % 2 == 0) {
+        long click = Long.parseLong((String) redisUtils.get(taskKey));
+        if (click % 2 == 0) {
             log.info("无效点击，已终止用户 {} 对新闻 {} 的点赞任务", userId, newsId);
             // 情况计时器
-            likeClickMap.remove(taskKey);
+            redisUtils.remove(taskKey);
             log.info("清空 {} 的计数器", taskKey);
             return;
         }
 
         // 开始执行，情况计时器
-        likeClickMap.remove(taskKey);
+        redisUtils.remove(taskKey);
         String likeHashKey = NewsConstant.NEWS_LIKE + ":" + newsId;
         String lockKey = NewsConstant.NEWS_LIKE_USER_LOCK + ':' + newsId + ':' + userId;
         short likeCount;

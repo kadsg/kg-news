@@ -370,4 +370,16 @@ public class RedisUtils {
         hash.delete(key, field);
     }
 
+    /**
+     * 键自增并返回值
+     * 若键不存在则创建
+     *
+     * @param key 键
+     */
+    public Long increment(String key) {
+        if (!exists(key)) {
+            set(key, String.valueOf(0));
+        }
+        return redisTemplate.opsForValue().increment(key);
+    }
 }
