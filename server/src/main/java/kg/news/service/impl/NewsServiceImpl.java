@@ -20,7 +20,7 @@ import kg.news.service.NewsService;
 import kg.news.service.RecommendService;
 import kg.news.service.UserService;
 import kg.news.utils.KeyWordUtil;
-import kg.news.utils.RedisUtils;
+import kg.news.utils.redis.RedisUtils;
 import kg.news.utils.ServiceUtil;
 import kg.news.vo.NewsDetailVO;
 import kg.news.vo.NewsLikeStatusVO;
@@ -66,13 +66,7 @@ public class NewsServiceImpl implements NewsService {
     @Resource
     private NewsKeyWordRepository newsKeyWordRepository;
     @Resource
-    private HistoryRepository historyRepository;
-    @Resource
     private RoleMapperRepository roleMapperRepository;
-    @Resource
-    private NewsTagRepository newsTagRepository;
-    @Resource
-    private UserInterestRepository userInterestRepository;
     @Resource
     private FavoriteMapper favoriteMapper;
     @Resource

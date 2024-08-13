@@ -6,7 +6,7 @@ import kg.news.entity.Favorite;
 import kg.news.entity.News;
 import kg.news.repository.FavoriteRepository;
 import kg.news.repository.NewsRepository;
-import kg.news.utils.RedisUtils;
+import kg.news.utils.redis.RedisUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -30,12 +30,13 @@ public class SaveNewsLikeTask {
     private NewsRepository newsRepository;
     @Resource
     private FavoriteRepository favoriteRepository;
+    @Resource
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Transactional(rollbackFor = Exception.class)
     @Scheduled(fixedRate = 20000)
     public void saveNewsLike() {
         log.info("正在更新用户新闻点赞数据，当前时间：{}", LocalDateTime.now());
-        RedisTemplate<String, Object> redisTemplate = redisUtils.getRedisTemplate();
         // 1. 从 Redis 中获取用户新闻点赞数据
         Set<String> keys = redisTemplate.keys(NewsConstant.NEWS_LIKE + ':' + "*");
         if (keys == null) {

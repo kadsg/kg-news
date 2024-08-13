@@ -4,8 +4,9 @@ import jakarta.annotation.Resource;
 import kg.news.constant.NewsConstant;
 import kg.news.repository.NewsRepository;
 import kg.news.service.HistoryService;
-import kg.news.utils.RedisUtils;
+import kg.news.utils.redis.RedisUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,11 +26,13 @@ public class SaveNewsReadTask {
     private NewsRepository newsRepository;
     @Resource
     private HistoryService historyService;
+    @Resource
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Transactional(rollbackFor = Exception.class)
     @Scheduled(fixedRate = 20000)
     public void saveNewsRead() {
-        Set<String> keys = redisUtils.getRedisTemplate().keys(NewsConstant.NEWS_READ + ':' + "*");
+        Set<String> keys = redisTemplate.keys(NewsConstant.NEWS_READ + ':' + "*");
         if (keys == null) {
             return;
         }
