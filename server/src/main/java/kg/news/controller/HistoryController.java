@@ -22,16 +22,16 @@ public class HistoryController {
         this.historyService = historyService;
     }
 
-    /**
-     * 保存浏览历史记录
-     *
-     * @param historySaveDTO 浏览历史记录
-     */
-    @PostMapping("/save")
-    public Result<Object> save(HistorySaveDTO historySaveDTO) {
-        historyService.save(historySaveDTO);
-        return Result.success();
-    }
+//    /**
+//     * 保存浏览历史记录
+//     *
+//     * @param historySaveDTO 浏览历史记录
+//     */
+//    @PostMapping("/save")
+//    public Result<Object> save(HistorySaveDTO historySaveDTO) {
+//        historyService.save(historySaveDTO);
+//        return Result.success();
+//    }
 
     /**
      * 分页获取浏览历史记录

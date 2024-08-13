@@ -7,4 +7,5 @@ public class NewsConstant {
     public static final String NEWS_LIKE_USER_LOCK="NEWS_LIKE_USER_LOCK";
     public static final String NEWS_DISLIKE="NEWS_DISLIKE";
     public static final String NEWS="NEWS";
+    public static final String NEWS_READ="NEWS_READ";
 }

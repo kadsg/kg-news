@@ -221,7 +221,7 @@ public class RedisUtils {
      * @param key   键
      * @param value 值
      */
-    public void add(String key, Object value) {
+    public void sAdd(String key, Object value) {
         SetOperations<String, Object> set = redisTemplate.opsForSet();
         set.add(key, value);
     }
@@ -232,9 +232,33 @@ public class RedisUtils {
      * @param key 键
      * @return Set<Object> 值
      */
-    public Set<Object> setMembers(String key) {
+    public Set<Object> sMembers(String key) {
         SetOperations<String, Object> set = redisTemplate.opsForSet();
         return set.members(key);
+    }
+
+    /**
+     * 判断集合key中是否存在元素member
+     *
+     * @param key 键
+     * @param member 元素
+     *
+     * @return boolean 是否存在
+     */
+    public boolean isMember(String key, Object member) {
+        SetOperations<String, Object> set = redisTemplate.opsForSet();
+        return Boolean.TRUE.equals(set.isMember(key, member));
+    }
+
+    /**
+     * 从集合key中删除元素member
+     *
+     * @param key   键
+     * @param member 值
+     */
+    public void sRemove(String key, Object member) {
+        SetOperations<String, Object> set = redisTemplate.opsForSet();
+        set.remove(key, member);
     }
 
     /**
@@ -274,6 +298,30 @@ public class RedisUtils {
     }
 
     /**
+     * 检查有序集合key中是否存在value
+     *
+     * @param key   集合名称
+     * @param value 值
+     *
+     * @return boolean 是否存在
+     */
+    public boolean zIsMember(String key, Object value) {
+        ZSetOperations<String, Object> zset = redisTemplate.opsForZSet();
+        return zset.rank(key, value) != null;
+    }
+
+    /**
+     * 从有序集合key中删除value
+     *
+     * @param key   集合名称
+     * @param value 值
+     */
+    public void zRemove(String key, Object value) {
+        ZSetOperations<String, Object> zset = redisTemplate.opsForZSet();
+        zset.remove(key, value);
+    }
+
+    /**
      * 根据排序获取有序集合key中的value
      *
      * @param key   集合名称
@@ -287,13 +335,25 @@ public class RedisUtils {
     }
 
     /**
+     * 获取有序集合key的元素个数
+     *
+     * @param key 键
+     *
+     * @return Long 元素个数
+     */
+    public Long zCard(String key) {
+        ZSetOperations<String, Object> zset = redisTemplate.opsForZSet();
+        return zset.zCard(key);
+    }
+
+    /**
      * 获取有序集合key中value的分数
      *
      * @param key   键
      * @param value 值
      * @return Double 分数
      */
-    public Double zSetScore(String key, Object value) {
+    public Double zGetScore(String key, Object value) {
         ZSetOperations<String, Object> zset = redisTemplate.opsForZSet();
         return zset.score(key, value);
     }
@@ -311,17 +371,30 @@ public class RedisUtils {
     }
 
     /**
-     * 根据从有序集合获取排名
+     * 根据分数从有序集合获取元素
+     *
+     * @param key 集合名称
+     * @param min 最低分
+     * @param max 最高分
+     * @return Set<ZSetOperations.TypedTuple < Object>> 值
+     */
+    public Set<ZSetOperations.TypedTuple<Object>> reverseZRankWithScore(String key, long min, long max) {
+        ZSetOperations<String, Object> zset = redisTemplate.opsForZSet();
+        return zset.reverseRangeByScoreWithScores(key, min, max);
+    }
+
+    /**
+     * 根据排序移除有序集合key中的value
      *
      * @param key   集合名称
      * @param start 开始
      * @param end   结束
-     * @return Set<ZSetOperations.TypedTuple < Object>> 值
      */
-    public Set<ZSetOperations.TypedTuple<Object>> reverseZRankWithScore(String key, long start, long end) {
+    public void removeRange(String key, long start, long end) {
         ZSetOperations<String, Object> zset = redisTemplate.opsForZSet();
-        return zset.reverseRangeByScoreWithScores(key, start, end);
+        zset.removeRange(key, start, end);
     }
+
 
     /**
      * 根据排序从有序集合key中从高到低获取value
@@ -334,6 +407,19 @@ public class RedisUtils {
     public Set<ZSetOperations.TypedTuple<Object>> reverseZRankWithRank(String key, long start, long end) {
         ZSetOperations<String, Object> zset = redisTemplate.opsForZSet();
         return zset.reverseRangeWithScores(key, start, end);
+    }
+
+    /**
+     * 根据排序从有序集合key中从低到高获取value
+     *
+     * @param key   集合名称
+     * @param start 开始排名
+     * @param end   结束排名
+     * @return Set<ZSetOperations.TypedTuple < Object>> 值
+     */
+    public Set<ZSetOperations.TypedTuple<Object>> zRankWithRank(String key, long start, long end) {
+        ZSetOperations<String, Object> zset = redisTemplate.opsForZSet();
+        return zset.rangeWithScores(key, start, end);
     }
 
     /**
