@@ -2,6 +2,8 @@ package kg.news.task;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+import com.xxl.job.core.handler.annotation.XxlJob;
+import jakarta.annotation.Resource;
 import kg.news.entity.News;
 import kg.news.entity.User;
 import kg.news.repository.NewsKeyWordRepository;
@@ -11,12 +13,12 @@ import kg.news.service.RecommendService;
 import kg.news.service.UserService;
 import kg.news.utils.KeyWordUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.xm.Similarity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,44 +28,40 @@ import java.util.stream.Collectors;
 @Slf4j
 public class GenerateRecommendationTask {
     private static final int RECOMMENDATION_COUNT = 20; // 推荐文章数量
-    private final UserService userService;
-    private final NewsService newsService;
-    private final RecommendService recommendService;
-    private final UserInterestRepository userInterestRepository;
-    private final NewsKeyWordRepository newsKeyWordRepository;
-    private final KeyWordUtil keyWordUtil;
+    @Resource
+    private UserService userService;
+    @Resource
+    private NewsService newsService;
+    @Resource
+    private RecommendService recommendService;
+    @Resource
+    private UserInterestRepository userInterestRepository;
+    @Resource
+    private NewsKeyWordRepository newsKeyWordRepository;
+    @Resource
+    private KeyWordUtil keyWordUtil;
 
-
-
-    public GenerateRecommendationTask(UserService userService, NewsService newsService,
-                                      RecommendService recommendService, UserInterestRepository userInterestRepository,
-                                      NewsKeyWordRepository newsKeyWordRepository,
-                                      KeyWordUtil keyWordUtil) {
-        this.userService = userService;
-        this.newsService = newsService;
-        this.recommendService = recommendService;
-        this.userInterestRepository = userInterestRepository;
-        this.newsKeyWordRepository = newsKeyWordRepository;
-        this.keyWordUtil = keyWordUtil;
+    @XxlJob("recommendationTask")
+    public void run() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy年MM月dd日-HH时-mm分-ss秒");
+        log.info("开始为所有用户生成推荐，开始时间{}", LocalDateTime.now().format(formatter));
+        generateRecommendation();
+        log.info("生成推荐结束，结束时间{}", LocalDateTime.now().format(formatter));
     }
 
     /**
      * 为所有用户生成推荐
      * 适用于小数据集，即用户量和文章量都不多的情况
-     * 评判数据量多少的标准：用户量和文章量都超过1000
      * 否则该推荐系统需要分布式计算
-     * 每十分钟执行一次
      */
-    @Scheduled(fixedRate = 1000 * 60 * 10)
-    public void generateRecommendation() {
-        log.info("开始为所有用户生成推荐，开始时间{}", LocalDateTime.now());
+    private void generateRecommendation() {
+
         // 1. 获取所有用户（不包含媒体、管理员）
         List<User> userList = userService.queryAllUser();
         // 2. 遍历所有用户，获取它们的兴趣词
         List<News> newsList = newsService.getAllNews();
         // 3. 为用户生成推荐
         generateUserRecommendations(userList, newsList);
-        log.info("生成推荐结束，结束时间{}", LocalDateTime.now());
     }
 
     /**
@@ -125,7 +123,7 @@ public class GenerateRecommendationTask {
      * @return 文章ID:匹配值
      */
     private Map<Long, Double> calculateMatchValue(String userInterest, Map<Long, String> newsKeyWordMap) {
-        if (userInterest == null || "".equals(userInterest)) {
+        if (userInterest == null || userInterest.isEmpty()) {
             return new HashMap<>();
         }
         // 新闻Id:匹配值
